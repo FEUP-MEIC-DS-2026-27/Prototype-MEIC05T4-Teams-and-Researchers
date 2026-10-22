@@ -1,0 +1,17 @@
+.pt-root { font-family: system-ui, sans-serif; color: #1a1a1a; max-width: 960px; margin: 0 auto; padding: 1rem; }
+.pt-header { display: flex; justify-content: space-between; align-items: center; }
+.pt-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+.pt-table th, .pt-table td { text-align: left; padding: .5rem; border-bottom: 1px solid #ddd; vertical-align: top; }
+.pt-form { display: flex; flex-direction: column; gap: 1rem; }
+.pt-form label { display: flex; flex-direction: column; gap: .25rem; font-weight: 600; }
+.pt-form input:not([type="checkbox"]), .pt-form textarea, .pt-form select { padding: .5rem; font: inherit; border: 1px solid #999; border-radius: 4px; }
+.pt-form [aria-invalid="true"] { border-color: #b00020; }
+.pt-form fieldset { border: 1px solid #ccc; border-radius: 4px; }
+.pt-checks { display: flex; flex-wrap: wrap; gap: .5rem 1rem; }
+.pt-check { flex-direction: row !important; align-items: center; font-weight: 400 !important; }
+.pt-actions { display: flex; justify-content: flex-end; gap: .5rem; }
+.pt-root button { padding: .5rem 1rem; font: inherit; border: 1px solid #999; border-radius: 4px; background: #fff; cursor: pointer; }
+.pt-root button.pt-primary { background: #0b5cad; border-color: #0b5cad; color: #fff; }
+.pt-root button:disabled { opacity: .6; cursor: not-allowed; }
+.pt-error { color: #b00020; font-weight: 400; }
+.pt-notice { background: #e6f4ea; padding: .5rem; border-radius: 4px; }
