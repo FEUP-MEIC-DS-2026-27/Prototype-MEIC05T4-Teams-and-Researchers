@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Crown } from "lucide-react";
 import { AvatarStack, PageHeader, Tag } from "@/components/shared/ui-bits";
-import { areaName, coordinatorOf, membersOf, projectsForTeam, teamAreaIds } from "@/modules/data/queries";
+import { areaName, coordinatorOf, membersOf, teamAreaIds } from "@/modules/data/queries";
 import { useData } from "@/modules/data/store";
 
 export const Route = createFileRoute("/teams/")({
@@ -36,7 +36,7 @@ function TeamsPage() {
               <div className="mt-3 flex flex-wrap gap-1">{teamAreaIds(data, t.id).slice(0, 4).map((a) => <Tag key={a}>{areaName(a)}</Tag>)}</div>
               <div className="mt-auto flex items-center justify-between border-t border-border pt-4 mt-5">
                 <AvatarStack names={members.map((m) => m.researcher.name)} />
-                <span className="text-xs text-muted-foreground tabular">{projectsForTeam(t.id).length} project(s)</span>
+                <span className="text-xs text-muted-foreground tabular">{members.length} member{members.length === 1 ? "" : "s"}</span>
               </div>
             </Link>
           );

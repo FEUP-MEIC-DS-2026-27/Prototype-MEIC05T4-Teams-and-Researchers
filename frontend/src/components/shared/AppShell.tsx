@@ -1,9 +1,9 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { ChevronRight, LayoutDashboard, Menu, Network, PanelLeftClose, PanelLeftOpen, Search, Shapes, UserRound, Users } from "lucide-react";
+import { ChevronRight, LayoutDashboard, Menu, PanelLeftClose, PanelLeftOpen, Search, UserRound, Users } from "lucide-react";
 import { useState, type FormEvent, type ReactNode } from "react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { areaName, getResearcher, getTeam } from "@/modules/data/queries";
+import { getResearcher, getTeam } from "@/modules/data/queries";
 import { useData, type DemoRole } from "@/modules/data/store";
 import { Wordmark } from "./Logo";
 import { Avatar, selectClass } from "./ui-bits";
@@ -12,8 +12,6 @@ const NAV = [
   { to: "/", label: "Overview", icon: LayoutDashboard },
   { to: "/researchers", label: "Researchers", icon: UserRound },
   { to: "/teams", label: "Teams", icon: Users },
-  { to: "/areas", label: "Research Areas", icon: Shapes },
-  { to: "/collaborations", label: "Collaborations", icon: Network },
 ] as const;
 
 function NavList({ collapsed, onNavigate }: { collapsed?: boolean; onNavigate?: () => void }) {
@@ -81,10 +79,7 @@ function useCrumbs() {
   } else if (parts[0] === "teams") {
     crumbs.push({ label: "Teams", to: "/teams" });
     if (parts[1]) crumbs.push({ label: getTeam(data, parts[1])?.name ?? "Unknown" });
-  } else if (parts[0] === "areas") {
-    crumbs.push({ label: "Research Areas", to: "/areas" });
-    if (parts[1]) crumbs.push({ label: areaName(parts[1]) });
-  } else if (parts[0] === "collaborations") crumbs.push({ label: "Collaborations" });
+  }
   return crumbs;
 }
 

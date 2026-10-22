@@ -1,14 +1,11 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { CheckCircle2, Layers, RefreshCw, Shapes, UserCheck, Users } from "lucide-react";
-import { useState } from "react";
+import { CheckCircle2, Layers, RefreshCw, UserCheck, Users } from "lucide-react";
 import { HBarChart } from "@/components/shared/HBarChart";
-import { AvatarStack, PageHeader, Section, SeverityIcon, StatCard, Tag } from "@/components/shared/ui-bits";
+import { AvatarStack, PageHeader, Section, SeverityIcon, StatCard } from "@/components/shared/ui-bits";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import {
-  areaName,
-  compositionByArea,
   compositionByCategory,
   compositionByTeam,
   coordinatorOf,
@@ -22,7 +19,6 @@ import { useData } from "@/modules/data/store";
 export function OverviewPage() {
   const { data, lastUpdated, refresh, refreshing, hydrated } = useData();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"team" | "area">("team");
   const m = overviewMetrics(data);
   const alerts = qualityAlerts(data);
   const loading = refreshing || !hydrated;
@@ -42,40 +38,24 @@ export function OverviewPage() {
 
       <div className="grid grid-cols-12 gap-4 lg:gap-6">
         {loading ? (
-          Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="col-span-12 h-[132px] rounded-xl sm:col-span-6 xl:col-span-3" />)
+          Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="col-span-12 h-[132px] rounded-xl sm:col-span-6 xl:col-span-4" />)
         ) : (
           <>
             <StatCard label="Researchers" value={m.total} icon={Users} hint="View all" to="/researchers" />
             <StatCard label="Active researchers" value={m.active} icon={UserCheck} hint="View active" to="/researchers" search={{ status: "active" }} />
             <StatCard label="Teams" value={m.teams} icon={Layers} hint="View teams" to="/teams" />
-            <StatCard label="Research areas represented" value={m.areas} icon={Shapes} hint="View areas" to="/areas" />
           </>
         )}
 
         <Section
           className="col-span-12 lg:col-span-8"
-          title={mode === "team" ? "Researchers per team" : "Researchers per research area"}
-          description={
-            mode === "team"
-              ? `Unique people per team. ${multiTeamCount(data)} researchers belong to more than one team, so bars add up to more than ${m.total}.`
-              : "A researcher may declare several research areas, so totals exceed the number of people."
-          }
-          actions={
-            <div role="tablist" aria-label="Group by" className="flex rounded-lg bg-muted p-1 text-xs">
-              {(["team", "area"] as const).map((k) => (
-                <button key={k} role="tab" aria-selected={mode === k} onClick={() => setMode(k)} className={cn("whitespace-nowrap rounded-md px-3 py-1.5 font-medium transition-colors", mode === k ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>
-                  {k === "team" ? "By team" : "By area"}
-                </button>
-              ))}
-            </div>
-          }
+          title="Researchers per team"
+          description={`Unique people per team. ${multiTeamCount(data)} researchers belong to more than one team, so bars add up to more than ${m.total}.`}
         >
-          {loading ? <Skeleton className="h-56" /> : mode === "team" ? (
+          {loading ? <Skeleton className="h-56" /> : (
             <HBarChart data={compositionByTeam(data)} labelWidth={56} onSelect={(d) => navigate({ to: "/teams/$id", params: { id: d.id } })} />
-          ) : (
-            <HBarChart data={compositionByArea(data).map((d) => ({ ...d, label: d.label.length > 22 ? d.label.slice(0, 20) + "…" : d.label }))} labelWidth={160} onSelect={(d) => navigate({ to: "/researchers", search: { area: d.id } })} />
           )}
-          <p className="mt-2 text-xs text-muted-foreground">Click a bar to open the {mode === "team" ? "team" : "filtered list"}.</p>
+          <p className="mt-2 text-xs text-muted-foreground">Click a bar to open the team.</p>
         </Section>
 
         <Section className="col-span-12 lg:col-span-4" title="Academic category" description="Each researcher counted once.">
@@ -97,7 +77,6 @@ export function OverviewPage() {
                       <span className="block truncate text-sm font-medium text-foreground">{t.name}</span>
                       <span className="block text-xs text-muted-foreground">Coordinator: {coord?.name ?? "- not assigned"}</span>
                     </span>
-                    <span className="hidden shrink-0 flex-wrap gap-1 2xl:flex">{t.areaIds.slice(0, 2).map((a) => <Tag key={a}>{areaName(a)}</Tag>)}</span>
                     <AvatarStack names={members.map((x) => x.researcher.name)} max={4} />
                   </Link>
                 </li>

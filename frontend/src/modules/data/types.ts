@@ -59,24 +59,6 @@ export interface Membership {
   role: TeamRole;
 }
 
-export interface Project {
-  id: string;
-  acronym: string;
-  title: string;
-  period: string;
-  teamId: string;
-  researcherIds: string[];
-}
-
-export interface Publication {
-  id: string;
-  title: string;
-  venue: string;
-  year: number;
-  teamId: string;
-  researcherIds: string[];
-}
-
 export interface Dataset {
   researchers: Researcher[];
   teams: Team[];

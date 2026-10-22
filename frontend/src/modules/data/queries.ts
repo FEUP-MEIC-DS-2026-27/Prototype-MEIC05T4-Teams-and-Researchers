@@ -1,5 +1,5 @@
-import { AREAS, PROJECTS, PUBLICATIONS } from "./seed";
-import type { Dataset, Membership, Researcher, Team } from "./types";
+import { AREAS } from "./seed";
+import type { Dataset, Researcher, Team } from "./types";
 
 export const areaName = (id: string) => AREAS.find((a) => a.id === id)?.name ?? id;
 
@@ -48,22 +48,15 @@ export const teamSkills = (d: Dataset, teamId: string) => {
   return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
 };
 
-export const projectsForResearcher = (id: string) => PROJECTS.filter((p) => p.researcherIds.includes(id));
-export const publicationsForResearcher = (id: string) => PUBLICATIONS.filter((p) => p.researcherIds.includes(id));
-export const projectsForTeam = (id: string) => PROJECTS.filter((p) => p.teamId === id);
-export const publicationsForTeam = (id: string) => PUBLICATIONS.filter((p) => p.teamId === id);
-
 export const allSkills = (d: Dataset) =>
   [...new Set(d.researchers.flatMap((r) => r.skills))].sort((a, b) => a.localeCompare(b));
 
 // ---------- Overview metrics (people counted once) ----------
 export function overviewMetrics(d: Dataset) {
-  const areaSet = new Set(d.researchers.flatMap((r) => r.areaIds));
   return {
     total: d.researchers.length,
     active: d.researchers.filter((r) => r.status === "active").length,
     teams: d.teams.length,
-    areas: areaSet.size,
   };
 }
 
@@ -77,14 +70,6 @@ export const compositionByTeam = (d: Dataset) =>
       value: new Set(d.memberships.filter((m) => m.teamId === t.id).map((m) => m.researcherId)).size,
     }))
     .sort((a, b) => b.value - a.value);
-
-export const compositionByArea = (d: Dataset) =>
-  AREAS.map((a) => ({
-    id: a.id,
-    label: a.name,
-    name: a.name,
-    value: d.researchers.filter((r) => r.areaIds.includes(a.id)).length,
-  })).sort((a, b) => b.value - a.value);
 
 export const compositionByCategory = (d: Dataset, researchers: Researcher[] = d.researchers) => {
   const map = new Map<string, number>();
@@ -182,26 +167,6 @@ export function researchersToCsv(d: Dataset, list: Researcher[]) {
     r.updatedAt,
   ]);
   return [header, ...rows].map((row) => row.map(csvCell).join(",")).join("\n");
-}
-
-// ---------- Collaboration graph ----------
-/** Edge between two researchers = number of teams they share. */
-export function collaborationEdges(memberships: Membership[]) {
-  const byTeam = new Map<string, string[]>();
-  memberships.forEach((m) => byTeam.set(m.teamId, [...(byTeam.get(m.teamId) ?? []), m.researcherId]));
-  const edges = new Map<string, { a: string; b: string; teams: string[] }>();
-  byTeam.forEach((ids, teamId) => {
-    const uniq = [...new Set(ids)].sort();
-    for (let i = 0; i < uniq.length; i++)
-      for (let j = i + 1; j < uniq.length; j++) {
-        const a = uniq[i]!, b = uniq[j]!;
-        const key = `${a}|${b}`;
-        const e = edges.get(key) ?? { a, b, teams: [] as string[] };
-        e.teams.push(teamId);
-        edges.set(key, e);
-      }
-  });
-  return [...edges.values()];
 }
 
 export const sortTeamsByName = (teams: Team[]) => [...teams].sort((a, b) => a.name.localeCompare(b.name));

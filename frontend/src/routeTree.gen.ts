@@ -10,9 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as CollaborationsRouteImport } from './routes/collaborations'
-import { Route as AreasIndexRouteImport } from './routes/areas.index'
-import { Route as AreasIdRouteImport } from './routes/areas.$id'
 import { Route as ResearchersIndexRouteImport } from './routes/researchers.index'
 import { Route as ResearchersIdRouteImport } from './routes/researchers.$id'
 import { Route as TeamsIndexRouteImport } from './routes/teams.index'
@@ -21,21 +18,6 @@ import { Route as TeamsIdRouteImport } from './routes/teams.$id'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CollaborationsRoute = CollaborationsRouteImport.update({
-  id: '/collaborations',
-  path: '/collaborations',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AreasIndexRoute = AreasIndexRouteImport.update({
-  id: '/areas/',
-  path: '/areas/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AreasIdRoute = AreasIdRouteImport.update({
-  id: '/areas/$id',
-  path: '/areas/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResearchersIndexRoute = ResearchersIndexRouteImport.update({
@@ -61,75 +43,45 @@ const TeamsIdRoute = TeamsIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/collaborations': typeof CollaborationsRoute
-  '/areas/$id': typeof AreasIdRoute
   '/researchers/$id': typeof ResearchersIdRoute
   '/teams/$id': typeof TeamsIdRoute
-  '/areas/': typeof AreasIndexRoute
   '/researchers/': typeof ResearchersIndexRoute
   '/teams/': typeof TeamsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/collaborations': typeof CollaborationsRoute
-  '/areas/$id': typeof AreasIdRoute
   '/researchers/$id': typeof ResearchersIdRoute
   '/teams/$id': typeof TeamsIdRoute
-  '/areas': typeof AreasIndexRoute
   '/researchers': typeof ResearchersIndexRoute
   '/teams': typeof TeamsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/collaborations': typeof CollaborationsRoute
-  '/areas/$id': typeof AreasIdRoute
   '/researchers/$id': typeof ResearchersIdRoute
   '/teams/$id': typeof TeamsIdRoute
-  '/areas/': typeof AreasIndexRoute
   '/researchers/': typeof ResearchersIndexRoute
   '/teams/': typeof TeamsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
-    | '/collaborations'
-    | '/areas/$id'
-    | '/researchers/$id'
-    | '/teams/$id'
-    | '/areas/'
-    | '/researchers/'
-    | '/teams/'
+    '/' | '/researchers/$id' | '/teams/$id' | '/researchers/' | '/teams/'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/collaborations'
-    | '/areas/$id'
-    | '/researchers/$id'
-    | '/teams/$id'
-    | '/areas'
-    | '/researchers'
-    | '/teams'
+  to: '/' | '/researchers/$id' | '/teams/$id' | '/researchers' | '/teams'
   id:
     | '__root__'
     | '/'
-    | '/collaborations'
-    | '/areas/$id'
     | '/researchers/$id'
     | '/teams/$id'
-    | '/areas/'
     | '/researchers/'
     | '/teams/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  CollaborationsRoute: typeof CollaborationsRoute
-  AreasIdRoute: typeof AreasIdRoute
   ResearchersIdRoute: typeof ResearchersIdRoute
   TeamsIdRoute: typeof TeamsIdRoute
-  AreasIndexRoute: typeof AreasIndexRoute
   ResearchersIndexRoute: typeof ResearchersIndexRoute
   TeamsIndexRoute: typeof TeamsIndexRoute
 }
@@ -141,27 +93,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/collaborations': {
-      id: '/collaborations'
-      path: '/collaborations'
-      fullPath: '/collaborations'
-      preLoaderRoute: typeof CollaborationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/areas/': {
-      id: '/areas/'
-      path: '/areas'
-      fullPath: '/areas/'
-      preLoaderRoute: typeof AreasIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/areas/$id': {
-      id: '/areas/$id'
-      path: '/areas/$id'
-      fullPath: '/areas/$id'
-      preLoaderRoute: typeof AreasIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/researchers/': {
@@ -197,11 +128,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  CollaborationsRoute: CollaborationsRoute,
-  AreasIdRoute: AreasIdRoute,
   ResearchersIdRoute: ResearchersIdRoute,
   TeamsIdRoute: TeamsIdRoute,
-  AreasIndexRoute: AreasIndexRoute,
   ResearchersIndexRoute: ResearchersIndexRoute,
   TeamsIndexRoute: TeamsIndexRoute,
 }

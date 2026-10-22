@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { BookOpen, Crown, FolderKanban, Pencil, ShieldCheck, Trash2, UserPlus, Users } from "lucide-react";
+import { Crown, Pencil, ShieldCheck, Trash2, UserPlus, Users } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { HBarChart } from "@/components/shared/HBarChart";
@@ -9,10 +9,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { compositionByCategory, coordinatorOf, getTeam, membersOf, projectsForTeam, publicationsForTeam, teamAreaIds, teamSkills, areaName } from "@/modules/data/queries";
+import { compositionByCategory, coordinatorOf, getTeam, membersOf, teamAreaIds, teamSkills, areaName } from "@/modules/data/queries";
 import { useData, usePermissions } from "@/modules/data/store";
 import { TEAM_ROLES, type TeamRole } from "@/modules/data/types";
-import { RefList } from "@/modules/researchers/ResearcherProfile";
 import { AddMemberSheet } from "./AddMemberSheet";
 import { EditDescriptionDialog } from "./EditDescriptionDialog";
 
@@ -67,7 +66,7 @@ export function TeamDetail({ id }: { id: string }) {
             </Link>
           ) : <p className="text-sm text-destructive">No coordinator assigned.</p>}
           <h3 className="mb-2 mt-5 text-sm font-semibold text-foreground">Research areas present</h3>
-          <div className="flex flex-wrap gap-1.5">{teamAreaIds(data, t.id).map((a) => <Link key={a} to="/areas/$id" params={{ id: a }}><Tag tone="teal">{areaName(a)}</Tag></Link>)}</div>
+          <div className="flex flex-wrap gap-1.5">{teamAreaIds(data, t.id).map((a) => <Tag key={a} tone="teal">{areaName(a)}</Tag>)}</div>
         </Section>
 
         <Section className="col-span-12" title="Members & roles" description="Removing a member only ends their participation in this team; their profile is kept.">
@@ -117,12 +116,6 @@ export function TeamDetail({ id }: { id: string }) {
           </div>
         </Section>
 
-        <Section className="col-span-12 lg:col-span-6" title="Related projects" description="Context only (read-only).">
-          <RefList icon={FolderKanban} empty="No related projects." items={projectsForTeam(t.id).map((p) => ({ id: p.id, title: `${p.acronym} - ${p.title}`, meta: p.period }))} />
-        </Section>
-        <Section className="col-span-12 lg:col-span-6" title="Related publications" description="Context only (read-only).">
-          <RefList icon={BookOpen} empty="No related publications." items={publicationsForTeam(t.id).map((p) => ({ id: p.id, title: p.title, meta: `${p.venue}, ${p.year}` }))} />
-        </Section>
       </div>
 
       {manage && (

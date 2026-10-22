@@ -14,4 +14,22 @@ describe("App routing", () => {
 
     expect(matches.at(-1)?.routeId).not.toBe(rootRouteId);
   });
+
+  it.each(["/researchers", "/researchers/r01", "/teams", "/teams/isl"])(
+    "matches the teams-and-researchers page %s",
+    (path) => {
+      const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
+
+      expect(router.matchRoutes(path).at(-1)?.routeId).not.toBe(rootRouteId);
+    },
+  );
+
+  it.each(["/areas", "/areas/hci", "/collaborations"])(
+    "does not register the unrelated page %s",
+    (path) => {
+      const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
+
+      expect(router.matchRoutes(path).at(-1)?.routeId).toBe(rootRouteId);
+    },
+  );
 });

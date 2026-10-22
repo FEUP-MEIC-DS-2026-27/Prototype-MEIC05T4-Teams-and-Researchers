@@ -6,8 +6,6 @@ import type {
   AcademicCategory,
   Dataset,
   Membership,
-  Project,
-  Publication,
   ResearchArea,
   Researcher,
   Team,
@@ -112,25 +110,6 @@ const MEMBERSHIPS: Membership[] = [
   M("r03", "isd", "Coordinator"), M("r11", "isd", "Senior member"), M("r10", "isd", "Member"), M("r21", "isd", "Member"), M("r17", "isd", "Senior member"), M("r19", "isd", "Associate"),
   M("r04", "ias", "Coordinator"), M("r13", "ias", "Senior member"), M("r12", "ias", "Member"), M("r22", "ias", "Member"), M("r09", "ias", "Associate"),
   M("r14", "dhw", "Coordinator"), M("r05", "dhw", "Senior member"), M("r15", "dhw", "Member"), M("r16", "dhw", "Member"), M("r24", "dhw", "Member"), M("r20", "dhw", "Associate"), M("r04", "dhw", "Associate"),
-];
-
-export const PROJECTS: Project[] = [
-  { id: "p1", acronym: "INCLUDE", title: "Inclusive design toolkit for public digital services", period: "2024–2027", teamId: "isl", researcherIds: ["r01", "r07", "r23"] },
-  { id: "p2", acronym: "VISTA", title: "Visual analytics for research portfolios", period: "2025–2027", teamId: "isl", researcherIds: ["r06", "r19"] },
-  { id: "p3", acronym: "AUTOTEST", title: "LLM-assisted test generation for industrial software", period: "2025–2028", teamId: "seq", researcherIds: ["r02", "r09", "r08"] },
-  { id: "p4", acronym: "GOVDATA", title: "Data governance framework for public administration", period: "2023–2026", teamId: "isd", researcherIds: ["r03", "r11", "r10"] },
-  { id: "p5", acronym: "CLARA", title: "Explainable conversational assistant for knowledge workers", period: "2024–2027", teamId: "ias", researcherIds: ["r04", "r13", "r12"] },
-  { id: "p6", acronym: "CAREPATH", title: "Remote monitoring pathways for chronic patients", period: "2024–2026", teamId: "dhw", researcherIds: ["r14", "r05", "r15", "r24"] },
-];
-
-export const PUBLICATIONS: Publication[] = [
-  { id: "b1", title: "Co-designing accessible e-government forms with older adults", venue: "CHI Conference on Human Factors", year: 2026, teamId: "isl", researcherIds: ["r01", "r07"] },
-  { id: "b2", title: "Glanceable dashboards for research information radiators", venue: "IEEE VIS (short paper)", year: 2025, teamId: "isl", researcherIds: ["r06", "r19", "r01"] },
-  { id: "b3", title: "Prompting strategies for unit test generation: an empirical study", venue: "ICSE", year: 2026, teamId: "seq", researcherIds: ["r09", "r02"] },
-  { id: "b4", title: "Measuring data quality debt in enterprise systems", venue: "CAiSE", year: 2025, teamId: "isd", researcherIds: ["r11", "r03", "r21"] },
-  { id: "b5", title: "When should an assistant explain itself?", venue: "IUI", year: 2026, teamId: "ias", researcherIds: ["r13", "r04"] },
-  { id: "b6", title: "Clinician-centred design of remote monitoring alerts", venue: "JMIR Human Factors", year: 2025, teamId: "dhw", researcherIds: ["r05", "r14", "r16"] },
-  { id: "b7", title: "Serious games for physical rehabilitation at home", venue: "CHI PLAY", year: 2024, teamId: "dhw", researcherIds: ["r20", "r15"] },
 ];
 
 export const SEED: Dataset = {

@@ -1,11 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { BookOpen, Database, FolderKanban, Mail, Pencil, UserX } from "lucide-react";
+import { Database, Mail, Pencil, UserX } from "lucide-react";
 import { useState } from "react";
 import { Avatar, EmptyState, Section, StatusBadge, Tag, fmtDate } from "@/components/shared/ui-bits";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { areaName, getResearcher, getTeam, membershipsOf, projectsForResearcher, publicationsForResearcher } from "@/modules/data/queries";
+import { areaName, getResearcher, getTeam, membershipsOf } from "@/modules/data/queries";
 import { useData, usePermissions } from "@/modules/data/store";
 import { EditSkillsSheet } from "./EditSkillsSheet";
 
@@ -24,8 +24,6 @@ export function ResearcherProfile({ id }: { id: string }) {
     );
 
   const ms = membershipsOf(data, r.id);
-  const projects = projectsForResearcher(r.id);
-  const pubs = publicationsForResearcher(r.id);
   const editable = canEditResearcher(r.id);
 
   return (
@@ -51,7 +49,6 @@ export function ResearcherProfile({ id }: { id: string }) {
         <TabsList className="mb-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="teams">Teams <span className="ml-1 tabular text-muted-foreground">{ms.length}</span></TabsTrigger>
-          <TabsTrigger value="work">Projects & publications</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="grid grid-cols-12 gap-4 lg:gap-6">
@@ -66,7 +63,7 @@ export function ResearcherProfile({ id }: { id: string }) {
           </Section>
           <Section className="col-span-12 lg:col-span-6" title="Research areas">
             <div className="flex flex-wrap gap-2">
-              {r.areaIds.map((a) => <Link key={a} to="/areas/$id" params={{ id: a }}><Tag tone="teal">{areaName(a)}</Tag></Link>)}
+              {r.areaIds.map((a) => <Tag key={a} tone="teal">{areaName(a)}</Tag>)}
             </div>
           </Section>
           <Section className="col-span-12 lg:col-span-6" title="Competences" actions={editable ? <Button variant="ghost" size="sm" onClick={() => setEditing(true)}><Pencil className="h-3.5 w-3.5" /> Edit</Button> : undefined}>
@@ -96,31 +93,9 @@ export function ResearcherProfile({ id }: { id: string }) {
           </Section>
         </TabsContent>
 
-        <TabsContent value="work" className="grid gap-4 lg:grid-cols-2 lg:gap-6">
-          <Section title="Projects" description="Read-only reference from the projects area.">
-            <RefList icon={FolderKanban} empty="No associated projects." items={projects.map((p) => ({ id: p.id, title: `${p.acronym} - ${p.title}`, meta: `${p.period} · ${getTeam(data, p.teamId)?.acronym}` }))} />
-          </Section>
-          <Section title="Publications" description="Read-only reference from the publications area.">
-            <RefList icon={BookOpen} empty="No associated publications." items={pubs.map((p) => ({ id: p.id, title: p.title, meta: `${p.venue}, ${p.year}` }))} />
-          </Section>
-        </TabsContent>
       </Tabs>
 
       {editable && <EditSkillsSheet open={editing} onOpenChange={setEditing} researcher={r} />}
     </>
-  );
-}
-
-export function RefList({ items, icon: Icon, empty }: { items: { id: string; title: string; meta: string }[]; icon: typeof BookOpen; empty: string }) {
-  if (!items.length) return <p className="text-sm text-muted-foreground">{empty}</p>;
-  return (
-    <ul className="space-y-3">
-      {items.map((i) => (
-        <li key={i.id} className="flex gap-3">
-          <Icon className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
-          <span><span className="block text-sm text-foreground">{i.title}</span><span className="text-xs text-muted-foreground">{i.meta}</span></span>
-        </li>
-      ))}
-    </ul>
   );
 }
