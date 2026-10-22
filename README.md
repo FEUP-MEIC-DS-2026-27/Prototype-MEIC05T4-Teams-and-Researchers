@@ -1,7 +1,7 @@
 # HumanISE.info - People & Teams Microfrontend
 
 Microfrontend do contentor **People & Teams** (ver modelo C4). Implementa a
-user story [#96 – Create and Edit Formal Teams and Details](https://github.com/FEUP-MEIC-DS-2026-27/h.i/issues/96):
+user story [#96 - Create and Edit Formal Teams and Details](https://github.com/FEUP-MEIC-DS-2026-27/h.i/issues/96):
 
 > Como administrador, quero criar e editar equipas formais (nome, descrição,
 > áreas de investigação, líder) para que o diretório de equipas reflita a organização.
