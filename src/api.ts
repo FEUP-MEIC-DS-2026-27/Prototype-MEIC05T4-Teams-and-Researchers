@@ -9,31 +9,16 @@ export interface TeamsApi {
   updateTeam(id: string, input: TeamInput): Promise<Team>;
 }
 
-export function createHttpApi(baseUrl: string, getToken?: () => string | undefined): TeamsApi {
-  const root = baseUrl.replace(/\/$/, "");
-
-  async function request<T>(path: string, init?: RequestInit): Promise<T> {
-    const token = getToken?.();
-    const res = await fetch(`${root}${path}`, {
-      ...init,
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    });
-    if (!res.ok) {
-      const body = (await res.json().catch(() => null)) as { message?: string } | null;
-      throw new Error(body?.message ?? `Request failed (${res.status})`);
-    }
-    return res.json() as Promise<T>;
-  }
-
+// TODO [Pessoa 4]: implementar com fetch ao API Gateway
+// (GET/POST /teams, PUT /teams/:id, GET /research-areas, GET /researchers),
+// com token de autenticação e tratamento de erros HTTP.
+export function createHttpApi(_baseUrl: string, _getToken?: () => string | undefined): TeamsApi {
+  const notImplemented = () => Promise.reject(new Error("HTTP API not implemented yet."));
   return {
-    listTeams: () => request("/teams"),
-    listAreas: () => request("/research-areas"),
-    listResearchers: () => request("/researchers"),
-    createTeam: (input) => request("/teams", { method: "POST", body: JSON.stringify(input) }),
-    updateTeam: (id, input) =>
-      request(`/teams/${encodeURIComponent(id)}`, { method: "PUT", body: JSON.stringify(input) }),
+    listTeams: notImplemented,
+    listAreas: notImplemented,
+    listResearchers: notImplemented,
+    createTeam: notImplemented,
+    updateTeam: notImplemented,
   };
 }
