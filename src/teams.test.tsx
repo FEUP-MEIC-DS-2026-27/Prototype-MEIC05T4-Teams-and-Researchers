@@ -32,7 +32,7 @@ describe("TeamsAdminApp", () => {
     await user.type(screen.getByLabelText("Description"), "All about data");
     await user.click(screen.getByLabelText("Data Science"));
     await user.selectOptions(screen.getByLabelText("Leader"), "Carla Nogueira");
-    await user.click(screen.getByText("Create team"));
+    await user.click(screen.getByRole("button", { name: "Create team" }));
     expect(await screen.findByText("Data Crew")).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent('Team "Data Crew" created.');
   });
@@ -41,7 +41,7 @@ describe("TeamsAdminApp", () => {
     const user = userEvent.setup();
     render(<TeamsAdminApp api={createMemoryApi()} isAdmin />);
     await user.click(await screen.findByText("New team"));
-    await user.click(screen.getByText("Create team"));
+    await user.click(screen.getByRole("button", { name: "Create team" }));
     expect(screen.getAllByRole("alert")).toHaveLength(4);
   });
 
