@@ -29,12 +29,8 @@ describe("TeamsAdminApp", () => {
     expect(await screen.findByText("Interaction Group")).toBeInTheDocument();
   });
 
-  // TODO [Pessoa 3]: testes de validação (campos obrigatórios, nome duplicado).
   it.todo("validates required fields");
-  // TODO [Pessoa 1/2]: testes de áreas e líder.
   it.todo("saves research areas and leader");
-  // TODO [Pessoa 5]: teste de modo só de leitura.
   it.todo("is read-only for non-admins");
-  // TODO [Pessoa 4]: testes do cliente HTTP (mock de fetch).
   it.todo("handles API errors");
 });

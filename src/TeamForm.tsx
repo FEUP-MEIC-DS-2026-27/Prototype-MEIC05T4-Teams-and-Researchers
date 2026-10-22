@@ -12,7 +12,6 @@ interface Props {
 }
 
 export function TeamForm({ team, teams, saving, error, onSubmit, onCancel }: Props) {
-  // areaIds e leaderId ainda não têm campos no formulário (ver TODOs abaixo).
   const [values, setValues] = useState<TeamInput>({
     name: team?.name ?? "",
     description: team?.description ?? "",
@@ -48,9 +47,6 @@ export function TeamForm({ team, teams, saving, error, onSubmit, onCancel }: Pro
         />
         {errors.description && <span className="pt-error" role="alert">{errors.description}</span>}
       </label>
-
-      {/* TODO [Pessoa 1]: seletor múltiplo de áreas de investigação (areaIds), recebendo a lista de áreas por props. */}
-      {/* TODO [Pessoa 2]: seletor do líder da equipa (leaderId), recebendo a lista de investigadores por props. */}
 
       {error && <p className="pt-error" role="alert">{error}</p>}
 

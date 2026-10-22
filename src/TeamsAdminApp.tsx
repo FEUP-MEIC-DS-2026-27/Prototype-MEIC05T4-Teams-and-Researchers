@@ -12,13 +12,11 @@ export interface TeamsAdminProps {
 type Mode = { kind: "list" } | { kind: "create" } | { kind: "edit"; team: Team };
 
 export function TeamsAdminApp({ api }: TeamsAdminProps) {
-  // TODO [Pessoa 5]: usar isAdmin para esconder "New team"/"Edit" a utilizadores sem permissão (modo só de leitura).
   const [teams, setTeams] = useState<Team[]>([]);
   const [mode, setMode] = useState<Mode>({ kind: "list" });
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string>();
 
-  // TODO [Pessoa 4]: estados de loading e de erro ao carregar, com botão "Retry".
   useEffect(() => {
     void api.listTeams().then(setTeams);
   }, [api]);
@@ -64,7 +62,6 @@ export function TeamsAdminApp({ api }: TeamsAdminProps) {
         <h1>Teams</h1>
         <button className="pt-primary" onClick={() => setMode({ kind: "create" })}>New team</button>
       </header>
-      {/* TODO [Pessoa 6]: mostrar áreas e líder na tabela, pesquisa/filtro por nome e feedback visual após guardar. */}
       <table className="pt-table">
         <thead>
           <tr><th>Name</th><th>Description</th><th /></tr>

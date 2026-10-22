@@ -9,9 +9,6 @@ export interface TeamsApi {
   updateTeam(id: string, input: TeamInput): Promise<Team>;
 }
 
-// TODO [Pessoa 4]: implementar com fetch ao API Gateway
-// (GET/POST /teams, PUT /teams/:id, GET /research-areas, GET /researchers),
-// com token de autenticação e tratamento de erros HTTP.
 export function createHttpApi(_baseUrl: string, _getToken?: () => string | undefined): TeamsApi {
   const notImplemented = () => Promise.reject(new Error("HTTP API not implemented yet."));
   return {

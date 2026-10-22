@@ -14,7 +14,6 @@ export interface MountOptions {
 
 const roots = new WeakMap<Element, Root>();
 
-// TODO [Pessoa 5]: integrar com a Microfrontend Shell (carregamento em runtime, rota, tema partilhado).
 export function mount(el: Element, options: MountOptions): void {
   unmount(el);
   const api =
