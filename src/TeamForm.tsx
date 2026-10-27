@@ -34,8 +34,13 @@ export function TeamForm({ team, teams, saving, error, onSubmit, onCancel }: Pro
 
       <label>
         Name
-        <input value={values.name} onChange={(e) => setValues({ ...values, name: e.target.value })} />
-        {errors.name && <span className="pt-error" role="alert">{errors.name}</span>}
+        <input
+          value={values.name}
+          onChange={(e) => setValues({ ...values, name: e.target.value })}
+          aria-invalid={errors.name ? "true" : undefined}
+          aria-describedby={errors.name ? "team-name-error" : undefined}
+        />
+        {errors.name && <span id="team-name-error" className="pt-error" role="alert">{errors.name}</span>}
       </label>
 
       <label>
@@ -44,8 +49,12 @@ export function TeamForm({ team, teams, saving, error, onSubmit, onCancel }: Pro
           rows={4}
           value={values.description}
           onChange={(e) => setValues({ ...values, description: e.target.value })}
+          aria-invalid={errors.description ? "true" : undefined}
+          aria-describedby={errors.description ? "team-description-error" : undefined}
         />
-        {errors.description && <span className="pt-error" role="alert">{errors.description}</span>}
+        {errors.description && (
+          <span id="team-description-error" className="pt-error" role="alert">{errors.description}</span>
+        )}
       </label>
 
       {error && <p className="pt-error" role="alert">{error}</p>}
