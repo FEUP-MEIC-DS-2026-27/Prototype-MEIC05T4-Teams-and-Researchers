@@ -16,9 +16,13 @@ export function TeamsAdminApp({ api, isAdmin }: TeamsAdminProps) {
   const [mode, setMode] = useState<Mode>({ kind: "list" });
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string>();
+  const [loadError, setLoadError] = useState<string>();
 
   useEffect(() => {
-    void api.listTeams().then(setTeams);
+    setLoadError(undefined);
+    void api
+      .listTeams()
+      .then(setTeams, (e) => setLoadError(e instanceof Error ? e.message : "Failed to load the teams."));
   }, [api]);
 
   async function save(input: TeamInput) {
@@ -64,6 +68,12 @@ export function TeamsAdminApp({ api, isAdmin }: TeamsAdminProps) {
           <button className="pt-primary" onClick={() => setMode({ kind: "create" })}>New team</button>
         )}
       </header>
+      {!isAdmin && (
+        <p className="pt-readonly" role="note">
+          You have read-only access. Only administrators can create or edit teams.
+        </p>
+      )}
+      {loadError && <p className="pt-error" role="alert">{loadError}</p>}
       <table className="pt-table">
         <thead>
           <tr><th>Name</th><th>Description</th>{isAdmin && <th />}</tr>

@@ -37,6 +37,22 @@ describe("TeamsAdminApp", () => {
     expect(await screen.findByText("Interaction Lab")).toBeInTheDocument();
     expect(screen.queryByText("New team")).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/^Edit /)).not.toBeInTheDocument();
+    expect(screen.getByRole("note")).toHaveTextContent("read-only access");
+  });
+
+  it("does not show the read-only note to admins", async () => {
+    render(<TeamsAdminApp api={createMemoryApi()} isAdmin />);
+    await screen.findByText("Interaction Lab");
+    expect(screen.queryByRole("note")).not.toBeInTheDocument();
+  });
+
+  it("shows why the teams could not be loaded", async () => {
+    const api = {
+      ...createMemoryApi(),
+      listTeams: () => Promise.reject(new Error("You don't have permission to do this.")),
+    };
+    render(<TeamsAdminApp api={api} isAdmin={false} />);
+    expect(await screen.findByRole("alert")).toHaveTextContent("You don't have permission to do this.");
   });
 
   it("leaves the editor when admin rights are lost", async () => {

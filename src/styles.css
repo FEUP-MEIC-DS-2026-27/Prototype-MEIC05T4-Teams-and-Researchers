@@ -15,3 +15,4 @@
 .pt-root button:disabled { opacity: .6; cursor: not-allowed; }
 .pt-error { color: #b00020; font-weight: 400; }
 .pt-notice { background: #e6f4ea; padding: .5rem; border-radius: 4px; }
+.pt-readonly { background: #eef2f7; padding: .5rem; border-radius: 4px; margin: .5rem 0 0; }
