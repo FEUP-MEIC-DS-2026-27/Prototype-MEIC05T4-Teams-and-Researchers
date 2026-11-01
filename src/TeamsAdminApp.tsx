@@ -11,7 +11,7 @@ export interface TeamsAdminProps {
 
 type Mode = { kind: "list" } | { kind: "create" } | { kind: "edit"; team: Team };
 
-export function TeamsAdminApp({ api }: TeamsAdminProps) {
+export function TeamsAdminApp({ api, isAdmin }: TeamsAdminProps) {
   const [teams, setTeams] = useState<Team[]>([]);
   const [mode, setMode] = useState<Mode>({ kind: "list" });
   const [saving, setSaving] = useState(false);
@@ -40,7 +40,7 @@ export function TeamsAdminApp({ api }: TeamsAdminProps) {
     }
   }
 
-  if (mode.kind !== "list") {
+  if (isAdmin && mode.kind !== "list") {
     return (
       <div className="pt-root">
         <TeamForm
@@ -60,22 +60,26 @@ export function TeamsAdminApp({ api }: TeamsAdminProps) {
     <div className="pt-root">
       <header className="pt-header">
         <h1>Teams</h1>
-        <button className="pt-primary" onClick={() => setMode({ kind: "create" })}>New team</button>
+        {isAdmin && (
+          <button className="pt-primary" onClick={() => setMode({ kind: "create" })}>New team</button>
+        )}
       </header>
       <table className="pt-table">
         <thead>
-          <tr><th>Name</th><th>Description</th><th /></tr>
+          <tr><th>Name</th><th>Description</th>{isAdmin && <th />}</tr>
         </thead>
         <tbody>
           {teams.map((t) => (
             <tr key={t.id}>
               <td>{t.name}</td>
               <td>{t.description}</td>
-              <td>
-                <button aria-label={`Edit ${t.name}`} onClick={() => setMode({ kind: "edit", team: t })}>
-                  Edit
-                </button>
-              </td>
+              {isAdmin && (
+                <td>
+                  <button aria-label={`Edit ${t.name}`} onClick={() => setMode({ kind: "edit", team: t })}>
+                    Edit
+                  </button>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

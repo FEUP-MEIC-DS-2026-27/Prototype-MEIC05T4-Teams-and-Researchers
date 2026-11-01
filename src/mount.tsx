@@ -23,7 +23,8 @@ export function mount(el: Element, options: MountOptions): void {
   roots.set(el, root);
   root.render(
     <StrictMode>
-      <TeamsAdminApp api={api} isAdmin={options.isAdmin} />
+      {/* Fail closed: anything but a real `true` from the Shell is read-only. */}
+      <TeamsAdminApp api={api} isAdmin={options.isAdmin === true} />
     </StrictMode>,
   );
 }
