@@ -14,12 +14,34 @@ type Mode = { kind: "list" } | { kind: "create" } | { kind: "edit"; team: Team }
 export function TeamsAdminApp({ api }: TeamsAdminProps) {
   const [teams, setTeams] = useState<Team[]>([]);
   const [mode, setMode] = useState<Mode>({ kind: "list" });
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string>();
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string>();
 
   useEffect(() => {
-    void api.listTeams().then(setTeams);
-  }, [api]);
+    let active = true;
+    setLoading(true);
+    setLoadError(undefined);
+
+    api.listTeams().then(
+      (loadedTeams) => {
+        if (active) setTeams(loadedTeams);
+      },
+      (error: unknown) => {
+        if (active) {
+          setLoadError(error instanceof Error ? error.message : "Failed to load teams.");
+        }
+      },
+    ).finally(() => {
+      if (active) setLoading(false);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [api, loadAttempt]);
 
   async function save(input: TeamInput) {
     setSaving(true);
@@ -62,24 +84,35 @@ export function TeamsAdminApp({ api }: TeamsAdminProps) {
         <h1>Teams</h1>
         <button className="pt-primary" onClick={() => setMode({ kind: "create" })}>New team</button>
       </header>
-      <table className="pt-table">
-        <thead>
-          <tr><th>Name</th><th>Description</th><th /></tr>
-        </thead>
-        <tbody>
-          {teams.map((t) => (
-            <tr key={t.id}>
-              <td>{t.name}</td>
-              <td>{t.description}</td>
-              <td>
-                <button aria-label={`Edit ${t.name}`} onClick={() => setMode({ kind: "edit", team: t })}>
-                  Edit
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {loading ? (
+        <p role="status">Loading teams…</p>
+      ) : loadError ? (
+        <div className="pt-load-error">
+          <p className="pt-error" role="alert">{loadError}</p>
+          <button onClick={() => setLoadAttempt((attempt) => attempt + 1)}>Retry</button>
+        </div>
+      ) : teams.length === 0 ? (
+        <p>No teams found.</p>
+      ) : (
+        <table className="pt-table">
+          <thead>
+            <tr><th>Name</th><th>Description</th><th /></tr>
+          </thead>
+          <tbody>
+            {teams.map((t) => (
+              <tr key={t.id}>
+                <td>{t.name}</td>
+                <td>{t.description}</td>
+                <td>
+                  <button aria-label={`Edit ${t.name}`} onClick={() => setMode({ kind: "edit", team: t })}>
+                    Edit
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

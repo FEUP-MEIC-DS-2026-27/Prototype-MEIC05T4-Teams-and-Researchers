@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createMemoryApi } from "./memoryApi";
 import { TeamsAdminApp } from "./TeamsAdminApp";
@@ -29,8 +29,30 @@ describe("TeamsAdminApp", () => {
     expect(await screen.findByText("Interaction Group")).toBeInTheDocument();
   });
 
+  it("shows loading state while the teams are being fetched", () => {
+    const api = createMemoryApi();
+    api.listTeams = () => new Promise(() => {});
+    render(<TeamsAdminApp api={api} isAdmin />);
+
+    expect(screen.getByRole("status")).toHaveTextContent("Loading teams…");
+  });
+
+  it("shows a load error and retries the request", async () => {
+    const api = {
+      ...createMemoryApi(),
+      listTeams: vi.fn()
+        .mockRejectedValueOnce(new Error("Service unavailable"))
+        .mockResolvedValueOnce([]),
+    };
+    render(<TeamsAdminApp api={api} isAdmin />);
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Service unavailable");
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(await screen.findByText("No teams found.")).toBeInTheDocument();
+    expect(api.listTeams).toHaveBeenCalledTimes(2);
+  });
+
   it.todo("validates required fields");
   it.todo("saves research areas and leader");
   it.todo("is read-only for non-admins");
-  it.todo("handles API errors");
 });
