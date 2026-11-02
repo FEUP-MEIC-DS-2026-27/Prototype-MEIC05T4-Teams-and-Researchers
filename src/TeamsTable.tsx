@@ -61,6 +61,7 @@ export function TeamsTable({ teams, areas, researchers, isAdmin, onEdit }: Props
       {visible.length === 0 ? (
         <p>{filtering ? "No teams match the current filters." : "No teams yet."}</p>
       ) : (
+        <div className="pt-table-wrap">
         <table className="pt-table">
           <caption id="pt-teams-title" className="pt-sr-only">Teams directory</caption>
           <thead>
@@ -76,8 +77,8 @@ export function TeamsTable({ teams, areas, researchers, isAdmin, onEdit }: Props
             {visible.map((t) => (
               <tr key={t.id}>
                 <th scope="row">{t.name}</th>
-                <td>{t.description}</td>
-                <td>
+                <td data-label="Description">{t.description}</td>
+                <td data-label="Research areas">
                   {t.areaIds.length === 0 ? (
                     "—"
                   ) : (
@@ -88,9 +89,9 @@ export function TeamsTable({ teams, areas, researchers, isAdmin, onEdit }: Props
                     </ul>
                   )}
                 </td>
-                <td>{t.leaderId ? (leaderName.get(t.leaderId) ?? t.leaderId) : "—"}</td>
+                <td data-label="Leader" className="pt-leader">{t.leaderId ? (leaderName.get(t.leaderId) ?? t.leaderId) : "—"}</td>
                 {isAdmin && (
-                  <td>
+                  <td className="pt-actions-cell">
                     <button aria-label={`Edit ${t.name}`} onClick={() => onEdit(t)}>Edit</button>
                   </td>
                 )}
@@ -98,6 +99,7 @@ export function TeamsTable({ teams, areas, researchers, isAdmin, onEdit }: Props
             ))}
           </tbody>
         </table>
+        </div>
       )}
     </section>
   );
