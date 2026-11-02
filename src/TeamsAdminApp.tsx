@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import type { TeamsApi } from "./api";
 import { TeamForm } from "./TeamForm";
-import type { Team, TeamInput } from "./types";
+import { TeamsTable } from "./TeamsTable";
+import type { ResearchArea, Researcher, Team, TeamInput } from "./types";
 import "./styles.css";
 
 export interface TeamsAdminProps {
@@ -11,7 +12,7 @@ export interface TeamsAdminProps {
 
 type Mode = { kind: "list" } | { kind: "create" } | { kind: "edit"; team: Team };
 
-export function TeamsAdminApp({ api }: TeamsAdminProps) {
+export function TeamsAdminApp({ api, isAdmin }: TeamsAdminProps) {
   const [teams, setTeams] = useState<Team[]>([]);
   const [mode, setMode] = useState<Mode>({ kind: "list" });
   const [loading, setLoading] = useState(true);
@@ -19,6 +20,9 @@ export function TeamsAdminApp({ api }: TeamsAdminProps) {
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string>();
+  const [areas, setAreas] = useState<ResearchArea[]>([]);
+  const [researchers, setResearchers] = useState<Researcher[]>([]);
+  const [notice, setNotice] = useState<string>();
 
   useEffect(() => {
     let active = true;
@@ -31,7 +35,7 @@ export function TeamsAdminApp({ api }: TeamsAdminProps) {
       },
       (error: unknown) => {
         if (active) {
-          setLoadError(error instanceof Error ? error.message : "Failed to load teams.");
+          setLoadError(error instanceof Error ? error.message : "Failed to load the teams.");
         }
       },
     ).finally(() => {
@@ -43,6 +47,17 @@ export function TeamsAdminApp({ api }: TeamsAdminProps) {
     };
   }, [api, loadAttempt]);
 
+  // Lookups only used to display names in the table; the table falls back to raw ids.
+  useEffect(() => {
+    void api.listAreas().then(setAreas, () => undefined);
+    void api.listResearchers().then(setResearchers, () => undefined);
+  }, [api]);
+
+  function openForm(next: Mode) {
+    setNotice(undefined);
+    setMode(next);
+  }
+
   async function save(input: TeamInput) {
     setSaving(true);
     setSaveError(undefined);
@@ -50,19 +65,21 @@ export function TeamsAdminApp({ api }: TeamsAdminProps) {
       if (mode.kind === "edit") {
         const updated = await api.updateTeam(mode.team.id, input);
         setTeams((ts) => ts.map((t) => (t.id === updated.id ? updated : t)));
+        setNotice(`Team "${updated.name}" updated.`);
       } else {
         const created = await api.createTeam(input);
         setTeams((ts) => [...ts, created]);
+        setNotice(`Team "${created.name}" created.`);
       }
       setMode({ kind: "list" });
-    } catch (e) {
-      setSaveError(e instanceof Error ? e.message : "Failed to save the team.");
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : "Failed to save the team.");
     } finally {
       setSaving(false);
     }
   }
 
-  if (mode.kind !== "list") {
+  if (isAdmin && mode.kind !== "list") {
     return (
       <div className="pt-root">
         <TeamForm
@@ -82,8 +99,16 @@ export function TeamsAdminApp({ api }: TeamsAdminProps) {
     <div className="pt-root">
       <header className="pt-header">
         <h1>Teams</h1>
-        <button className="pt-primary" onClick={() => setMode({ kind: "create" })}>New team</button>
+        {isAdmin && (
+          <button className="pt-primary" onClick={() => openForm({ kind: "create" })}>New team</button>
+        )}
       </header>
+      {!isAdmin && (
+        <p className="pt-readonly" role="note">
+          You have read-only access. Only administrators can create or edit teams.
+        </p>
+      )}
+      {notice && <p className="pt-notice" role="status">{notice}</p>}
       {loading ? (
         <p role="status">Loading teams…</p>
       ) : loadError ? (
@@ -91,27 +116,14 @@ export function TeamsAdminApp({ api }: TeamsAdminProps) {
           <p className="pt-error" role="alert">{loadError}</p>
           <button onClick={() => setLoadAttempt((attempt) => attempt + 1)}>Retry</button>
         </div>
-      ) : teams.length === 0 ? (
-        <p>No teams found.</p>
       ) : (
-        <table className="pt-table">
-          <thead>
-            <tr><th>Name</th><th>Description</th><th /></tr>
-          </thead>
-          <tbody>
-            {teams.map((t) => (
-              <tr key={t.id}>
-                <td>{t.name}</td>
-                <td>{t.description}</td>
-                <td>
-                  <button aria-label={`Edit ${t.name}`} onClick={() => setMode({ kind: "edit", team: t })}>
-                    Edit
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <TeamsTable
+          teams={teams}
+          areas={areas}
+          researchers={researchers}
+          isAdmin={isAdmin}
+          onEdit={(team) => openForm({ kind: "edit", team })}
+        />
       )}
     </div>
   );

@@ -9,54 +9,73 @@ export interface TeamsApi {
   updateTeam(id: string, input: TeamInput): Promise<Team>;
 }
 
+function errorMessage(status: number): string {
+  if (status === 401) return "Your session has expired. Please sign in again.";
+  if (status === 403) return "You don't have permission to do this.";
+  return `The request failed (HTTP ${status}).`;
+}
+
+/**
+ * REST client for the API Gateway. `getToken` is called on every request so the Shell
+ * can refresh the token without remounting. The service must enforce admin-only writes
+ * itself (403); `isAdmin` in the UI is only a convenience.
+ */
 export function createHttpApi(baseUrl: string, getToken?: () => string | undefined): TeamsApi {
-  const normalizedBaseUrl = baseUrl.trim().replace(/\/+$/, "");
-  if (!normalizedBaseUrl) {
-    throw new Error("API Gateway base URL is required.");
-  }
+  const root = baseUrl.trim().replace(/\/+$/, "");
+  if (!root) throw new Error("API Gateway base URL is required.");
 
-  async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-    const headers = new Headers(options.headers);
-    headers.set("Accept", "application/json");
-    if (options.body !== undefined) headers.set("Content-Type", "application/json");
-
+  async function request<T>(path: string, method = "GET", body?: unknown): Promise<T> {
     const token = getToken?.();
-    if (token) headers.set("Authorization", `Bearer ${token}`);
+    const headers = {
+      Accept: "application/json",
+      ...(body === undefined ? {} : { "Content-Type": "application/json" }),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
 
-    const response = await fetch(`${normalizedBaseUrl}${path}`, { ...options, headers });
-    const body = await response.text();
+    const response = await fetch(`${root}${path}`, {
+      method,
+      headers,
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+    const responseBody = await response.text();
 
     if (!response.ok) {
-      let message = body;
+      if (response.status === 401 || response.status === 403) {
+        throw new Error(errorMessage(response.status));
+      }
+
+      let detail = responseBody;
       try {
-        const parsed: unknown = JSON.parse(body);
+        const parsed: unknown = JSON.parse(responseBody);
         if (
           parsed &&
           typeof parsed === "object" &&
           "message" in parsed &&
           typeof parsed.message === "string"
         ) {
-          message = parsed.message;
+          detail = parsed.message;
+        } else {
+          detail = "";
         }
       } catch {
-        // Keep the response body as the error detail when it is not JSON.
+        // Keep a non-JSON response body as the error detail.
       }
 
       throw new Error(
-        message
-          ? `API request failed (${response.status}): ${message}`
-          : `API request failed (${response.status} ${response.statusText}).`,
+        detail
+          ? `API request failed (${response.status}): ${detail} (HTTP ${response.status}).`
+          : errorMessage(response.status),
       );
     }
 
-    if (!body) {
-      throw new Error(`API request returned an empty response for ${path}.`);
+    if (!responseBody) {
+      throw new Error(`The API returned an empty response for ${path}.`);
     }
 
     try {
-      return JSON.parse(body) as T;
+      return JSON.parse(responseBody) as T;
     } catch {
-      throw new Error(`API request returned invalid JSON for ${path}.`);
+      throw new Error(`The API returned invalid JSON for ${path}.`);
     }
   }
 
@@ -64,12 +83,7 @@ export function createHttpApi(baseUrl: string, getToken?: () => string | undefin
     listTeams: () => request<Team[]>("/teams"),
     listAreas: () => request<ResearchArea[]>("/research-areas"),
     listResearchers: () => request<Researcher[]>("/researchers"),
-    createTeam: (input) =>
-      request<Team>("/teams", { method: "POST", body: JSON.stringify(input) }),
-    updateTeam: (id, input) =>
-      request<Team>(`/teams/${encodeURIComponent(id)}`, {
-        method: "PUT",
-        body: JSON.stringify(input),
-      }),
+    createTeam: (input) => request<Team>("/teams", "POST", input),
+    updateTeam: (id, input) => request<Team>(`/teams/${encodeURIComponent(id)}`, "PUT", input),
   };
 }
