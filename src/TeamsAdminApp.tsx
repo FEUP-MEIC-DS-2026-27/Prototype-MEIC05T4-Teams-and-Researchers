@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { TeamsApi } from "./api";
 import { TeamForm } from "./TeamForm";
-import type { Team, TeamInput } from "./types";
+import type { Team, TeamInput, ResearchArea } from "./types";
 import "./styles.css";
 
 export interface TeamsAdminProps {
@@ -13,6 +13,7 @@ type Mode = { kind: "list" } | { kind: "create" } | { kind: "edit"; team: Team }
 
 export function TeamsAdminApp({ api }: TeamsAdminProps) {
   const [teams, setTeams] = useState<Team[]>([]);
+  const [researchAreas, setResearchAreas] = useState<ResearchArea[]>([]);
   const [mode, setMode] = useState<Mode>({ kind: "list" });
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string>();
@@ -36,6 +37,19 @@ export function TeamsAdminApp({ api }: TeamsAdminProps) {
       },
     ).finally(() => {
       if (active) setLoading(false);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [api, loadAttempt]);
+
+  useEffect(() => {
+    let active = true;
+    api.listAreas().then((loadedAreas) => {
+      if (active) setResearchAreas(loadedAreas);
+    }).catch((err) => {
+      console.error("Failed to load areas:", err);
     });
 
     return () => {
@@ -73,6 +87,7 @@ export function TeamsAdminApp({ api }: TeamsAdminProps) {
           error={saveError}
           onSubmit={(input) => void save(input)}
           onCancel={() => setMode({ kind: "list" })}
+          researchAreas={researchAreas}
         />
       </div>
     );
