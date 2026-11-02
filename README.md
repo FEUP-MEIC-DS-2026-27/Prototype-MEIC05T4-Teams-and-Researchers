@@ -9,14 +9,6 @@ O protótipo completo anterior está na branch `v1-geral`.
 
 ## Comandos
 
-## Cliente HTTP
-
-`mount()` aceita `apiBaseUrl` para ligar ao API Gateway; sem este valor, usa os dados
-de demonstração em memória. O cliente HTTP espera respostas JSON nos endpoints
-`GET /teams`, `GET /research-areas`, `GET /researchers`, `POST /teams` e
-`PUT /teams/{id}`. Se fornecido, `getToken` é chamado em cada pedido e o valor é
-enviado como token Bearer.
-
 ```sh
 npm install
 npm run dev     # página standalone com dados de demonstração
