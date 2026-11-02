@@ -21,21 +21,62 @@ function errorMessage(status: number): string {
  * itself (403); `isAdmin` in the UI is only a convenience.
  */
 export function createHttpApi(baseUrl: string, getToken?: () => string | undefined): TeamsApi {
-  const root = baseUrl.replace(/\/+$/, "");
+  const root = baseUrl.trim().replace(/\/+$/, "");
+  if (!root) throw new Error("API Gateway base URL is required.");
 
   async function request<T>(path: string, method = "GET", body?: unknown): Promise<T> {
     const token = getToken?.();
-    const res = await fetch(`${root}${path}`, {
+    const headers = {
+      Accept: "application/json",
+      ...(body === undefined ? {} : { "Content-Type": "application/json" }),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+
+    const response = await fetch(`${root}${path}`, {
       method,
-      headers: {
-        Accept: "application/json",
-        ...(body === undefined ? {} : { "Content-Type": "application/json" }),
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
+      headers,
       body: body === undefined ? undefined : JSON.stringify(body),
     });
-    if (!res.ok) throw new Error(errorMessage(res.status));
-    return (await res.json()) as T;
+    const responseBody = await response.text();
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error(errorMessage(response.status));
+      }
+
+      let detail = responseBody;
+      try {
+        const parsed: unknown = JSON.parse(responseBody);
+        if (
+          parsed &&
+          typeof parsed === "object" &&
+          "message" in parsed &&
+          typeof parsed.message === "string"
+        ) {
+          detail = parsed.message;
+        } else {
+          detail = "";
+        }
+      } catch {
+        // Keep a non-JSON response body as the error detail.
+      }
+
+      throw new Error(
+        detail
+          ? `API request failed (${response.status}): ${detail} (HTTP ${response.status}).`
+          : errorMessage(response.status),
+      );
+    }
+
+    if (!responseBody) {
+      throw new Error(`The API returned an empty response for ${path}.`);
+    }
+
+    try {
+      return JSON.parse(responseBody) as T;
+    } catch {
+      throw new Error(`The API returned invalid JSON for ${path}.`);
+    }
   }
 
   return {
