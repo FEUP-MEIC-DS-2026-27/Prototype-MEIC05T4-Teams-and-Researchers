@@ -15,19 +15,37 @@ type Mode = { kind: "list" } | { kind: "create" } | { kind: "edit"; team: Team }
 export function TeamsAdminApp({ api, isAdmin }: TeamsAdminProps) {
   const [teams, setTeams] = useState<Team[]>([]);
   const [mode, setMode] = useState<Mode>({ kind: "list" });
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string>();
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string>();
-  const [loadError, setLoadError] = useState<string>();
   const [areas, setAreas] = useState<ResearchArea[]>([]);
   const [researchers, setResearchers] = useState<Researcher[]>([]);
   const [notice, setNotice] = useState<string>();
 
   useEffect(() => {
+    let active = true;
+    setLoading(true);
     setLoadError(undefined);
-    void api
-      .listTeams()
-      .then(setTeams, (e) => setLoadError(e instanceof Error ? e.message : "Failed to load the teams."));
-  }, [api]);
+
+    api.listTeams().then(
+      (loadedTeams) => {
+        if (active) setTeams(loadedTeams);
+      },
+      (error: unknown) => {
+        if (active) {
+          setLoadError(error instanceof Error ? error.message : "Failed to load the teams.");
+        }
+      },
+    ).finally(() => {
+      if (active) setLoading(false);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [api, loadAttempt]);
 
   useEffect(() => {
     let active = true;
@@ -67,8 +85,8 @@ export function TeamsAdminApp({ api, isAdmin }: TeamsAdminProps) {
         setNotice(`Team "${created.name}" created.`);
       }
       setMode({ kind: "list" });
-    } catch (e) {
-      setSaveError(e instanceof Error ? e.message : "Failed to save the team.");
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : "Failed to save the team.");
     } finally {
       setSaving(false);
     }
@@ -106,14 +124,22 @@ export function TeamsAdminApp({ api, isAdmin }: TeamsAdminProps) {
         </p>
       )}
       {notice && <p className="pt-notice" role="status">{notice}</p>}
-      {loadError && <p className="pt-error" role="alert">{loadError}</p>}
-      <TeamsTable
-        teams={teams}
-        areas={areas}
-        researchers={researchers}
-        isAdmin={isAdmin}
-        onEdit={(team) => openForm({ kind: "edit", team })}
-      />
+      {loading ? (
+        <p role="status">Loading teams…</p>
+      ) : loadError ? (
+        <div className="pt-load-error">
+          <p className="pt-error" role="alert">{loadError}</p>
+          <button onClick={() => setLoadAttempt((attempt) => attempt + 1)}>Retry</button>
+        </div>
+      ) : (
+        <TeamsTable
+          teams={teams}
+          areas={areas}
+          researchers={researchers}
+          isAdmin={isAdmin}
+          onEdit={(team) => openForm({ kind: "edit", team })}
+        />
+      )}
     </div>
   );
 }

@@ -75,6 +75,31 @@ describe("TeamsAdminApp", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("You don't have permission to do this.");
   });
 
+  it("shows a loading state while teams are being fetched", () => {
+    const api = createMemoryApi();
+    api.listTeams = () => new Promise(() => {});
+    api.listAreas = () => new Promise(() => {});
+    api.listResearchers = () => new Promise(() => {});
+    render(<TeamsAdminApp api={api} isAdmin />);
+
+    expect(screen.getByRole("status")).toHaveTextContent("Loading teams…");
+  });
+
+  it("retries after a teams load error", async () => {
+    const user = userEvent.setup();
+    const memoryApi = createMemoryApi();
+    const listTeams = vi.fn()
+      .mockRejectedValueOnce(new Error("Service unavailable"))
+      .mockImplementation(() => memoryApi.listTeams());
+    const api = { ...memoryApi, listTeams };
+    render(<TeamsAdminApp api={api} isAdmin />);
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Service unavailable");
+    await user.click(screen.getByRole("button", { name: "Retry" }));
+    expect(await screen.findByText("Interaction Lab")).toBeInTheDocument();
+    expect(listTeams).toHaveBeenCalledTimes(2);
+  });
+
   it("leaves the editor when admin rights are lost", async () => {
     const user = userEvent.setup();
     const api = createMemoryApi();

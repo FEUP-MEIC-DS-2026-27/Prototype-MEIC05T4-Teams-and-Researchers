@@ -10,6 +10,7 @@
 .pt-checks { display: flex; flex-wrap: wrap; gap: .5rem 1rem; }
 .pt-check { flex-direction: row !important; align-items: center; font-weight: 400 !important; }
 .pt-actions { display: flex; justify-content: flex-end; gap: .5rem; }
+.pt-load-error { display: flex; align-items: center; gap: 1rem; }
 .pt-root button { padding: .5rem 1rem; font: inherit; border: 1px solid #999; border-radius: 4px; background: #fff; cursor: pointer; }
 .pt-root button.pt-primary { background: #0b5cad; border-color: #0b5cad; color: #fff; }
 .pt-root button:disabled { opacity: .6; cursor: not-allowed; }
