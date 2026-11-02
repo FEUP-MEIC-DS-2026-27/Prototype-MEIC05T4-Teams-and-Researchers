@@ -7,7 +7,7 @@ export const DEMO_AREAS: ResearchArea[] = [
   { id: "se", name: "Software Engineering" },
   { id: "ai", name: "Artificial Intelligence" },
   { id: "ds", name: "Data Science" },
-  { id: "sec", name: "Cybersecurity" },
+  { id: "sec", name: "Cybersecurity" }
 ];
 
 export const DEMO_RESEARCHERS: Researcher[] = [
