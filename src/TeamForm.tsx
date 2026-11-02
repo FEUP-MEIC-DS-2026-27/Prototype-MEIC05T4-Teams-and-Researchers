@@ -1,18 +1,17 @@
 import { useState, type FormEvent } from "react";
-import type { Researcher, Team, TeamErrors, TeamInput } from "./types";
+import type { Team, TeamErrors, TeamInput } from "./types";
 import { validateTeam } from "./validation";
 
 interface Props {
   team?: Team;
   teams: Team[];
-  researchers: Researcher[];
   saving: boolean;
   error?: string;
   onSubmit: (input: TeamInput) => void;
   onCancel: () => void;
 }
 
-export function TeamForm({ team, teams, researchers, saving, error, onSubmit, onCancel }: Props) {
+export function TeamForm({ team, teams, saving, error, onSubmit, onCancel }: Props) {
   const [values, setValues] = useState<TeamInput>({
     name: team?.name ?? "",
     description: team?.description ?? "",
@@ -47,17 +46,6 @@ export function TeamForm({ team, teams, researchers, saving, error, onSubmit, on
           onChange={(e) => setValues({ ...values, description: e.target.value })}
         />
         {errors.description && <span className="pt-error" role="alert">{errors.description}</span>}
-      </label>
-
-      <label>
-        Leader
-        <select value={values.leaderId} onChange={(e) => setValues({ ...values, leaderId: e.target.value })}>
-          <option value="">Select a leader</option>
-          {researchers.map((r) => (
-            <option key={r.id} value={r.id}>{r.name}</option>
-          ))}
-        </select>
-        {errors.leaderId && <span className="pt-error" role="alert">{errors.leaderId}</span>}
       </label>
 
       {error && <p className="pt-error" role="alert">{error}</p>}
