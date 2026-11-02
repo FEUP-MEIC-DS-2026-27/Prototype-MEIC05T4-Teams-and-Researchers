@@ -1,8 +1,8 @@
 import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { createMemoryApi } from "./memoryApi";
-import { mount, unmount } from "./mount";
-import { TeamsAdminApp } from "./TeamsAdminApp";
+import { createMemoryApi } from "../memoryApi";
+import { mount, unmount } from "../mount";
+import { TeamsAdminApp } from "../TeamsAdminApp";
 
 describe("TeamsAdminApp", () => {
   it("lists teams", async () => {

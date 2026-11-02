@@ -1,4 +1,4 @@
-import { createHttpApi } from "./api";
+import { createHttpApi } from "../api";
 
 const input = { name: "Data Crew", description: "", areaIds: [], leaderId: "" };
 
