@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { createMemoryApi } from "./memoryApi";
-import { TeamsAdminApp } from "./TeamsAdminApp";
+import { createMemoryApi } from "../memoryApi";
+import { TeamsAdminApp } from "../TeamsAdminApp";
 
 describe("Teams table", () => {
   it("shows research areas and leader names", async () => {
