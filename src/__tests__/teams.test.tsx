@@ -16,7 +16,8 @@ describe("TeamsAdminApp", () => {
     await user.click(await screen.findByText("New team"));
     await user.type(screen.getByLabelText("Name"), "Data Crew");
     await user.type(screen.getByLabelText("Description"), "A team for data research.");
-    await user.selectOptions(screen.getByLabelText("Research areas"), ["ds", "se"]);
+    await user.click(screen.getByRole("checkbox", { name: "Data Science" }));
+    await user.click(screen.getByRole("checkbox", { name: "Software Engineering" }));
     await user.selectOptions(screen.getByLabelText("Leader"), "r3");
     await user.click(screen.getByRole("button", { name: "Save" }));
     const row = (await screen.findByRole("rowheader", { name: "Data Crew" })).closest("tr")!;
@@ -32,7 +33,9 @@ describe("TeamsAdminApp", () => {
     const name = screen.getByLabelText("Name");
     await user.clear(name);
     await user.type(name, "Interaction Group");
-    await user.selectOptions(screen.getByLabelText("Research areas"), ["se", "sec"]);
+    await user.click(screen.getByRole("checkbox", { name: "Human-Computer Interaction" }));
+    await user.click(screen.getByRole("checkbox", { name: "Software Engineering" }));
+    await user.click(screen.getByRole("checkbox", { name: "Cybersecurity" }));
     await user.selectOptions(screen.getByLabelText("Leader"), "r4");
     await user.click(screen.getByRole("button", { name: "Save" }));
     const row = (await screen.findByRole("rowheader", { name: "Interaction Group" })).closest("tr")!;
@@ -128,14 +131,18 @@ describe("TeamsAdminApp", () => {
     render(<TeamsAdminApp api={api} isAdmin />);
     await user.click(await screen.findByText("New team"));
     await user.type(screen.getByLabelText("Name"), "Data & AI Team");
-    const areasSelect = screen.getByLabelText("Research Areas");
-    await user.selectOptions(areasSelect, ["Artificial Intelligence", "Data Science"]);
+    await user.type(screen.getByLabelText("Description"), "A team combining data and AI research.");
+    await user.selectOptions(screen.getByLabelText("Leader"), "r1");
+    await user.click(screen.getByRole("checkbox", { name: "Artificial Intelligence" }));
+    await user.click(screen.getByRole("checkbox", { name: "Data Science" }));
     await user.click(screen.getByRole("button", { name: "Save" }));
     expect(await screen.findByText("Data & AI Team")).toBeInTheDocument();
     expect(createSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         name: "Data & AI Team",
-        areaIds: ["ai", "ds"] 
+        description: "A team combining data and AI research.",
+        areaIds: ["ai", "ds"],
+        leaderId: "r1",
       })
     );
   });

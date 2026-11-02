@@ -75,7 +75,12 @@ export function TeamForm({ team, teams, researchAreas, researchers, saving, erro
         {errors.leaderId && <span id="team-leader-error" className="pt-error" role="alert">{errors.leaderId}</span>}
       </label>
 
-      <fieldset className="pt-fieldset" style={{ border: "none", padding: 0, margin: 0 }}>
+      <fieldset
+        className="pt-fieldset"
+        style={{ border: "none", padding: 0, margin: 0 }}
+        aria-invalid={errors.areaIds ? "true" : undefined}
+        aria-describedby={errors.areaIds ? "team-areas-error" : undefined}
+      >
         <legend style={{ fontWeight: "bold", marginBottom: "8px" }}>Research Areas</legend>
         {researchAreas?.map((area) => (
           <label key={area.id} style={{ display: "block", marginBottom: "4px" }}>
@@ -97,6 +102,7 @@ export function TeamForm({ team, teams, researchAreas, researchers, saving, erro
           </label>
         ))}
       </fieldset>
+      {errors.areaIds && <span id="team-areas-error" className="pt-error" role="alert">{errors.areaIds}</span>}
 
       {error && <p className="pt-error" role="alert">{error}</p>}
 
