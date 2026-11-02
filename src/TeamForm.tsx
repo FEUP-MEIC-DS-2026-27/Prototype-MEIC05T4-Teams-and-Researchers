@@ -1,17 +1,19 @@
 import { useState, type FormEvent } from "react";
-import type { Team, TeamErrors, TeamInput } from "./types";
+import type { ResearchArea, Researcher, Team, TeamErrors, TeamInput } from "./types";
 import { validateTeam } from "./validation";
 
 interface Props {
   team?: Team;
   teams: Team[];
+  researchAreas: ResearchArea[];
+  researchers: Researcher[];
   saving: boolean;
   error?: string;
   onSubmit: (input: TeamInput) => void;
   onCancel: () => void;
 }
 
-export function TeamForm({ team, teams, saving, error, onSubmit, onCancel }: Props) {
+export function TeamForm({ team, teams, researchAreas, researchers, saving, error, onSubmit, onCancel }: Props) {
   const [values, setValues] = useState<TeamInput>({
     name: team?.name ?? "",
     description: team?.description ?? "",
@@ -34,8 +36,13 @@ export function TeamForm({ team, teams, saving, error, onSubmit, onCancel }: Pro
 
       <label>
         Name
-        <input value={values.name} onChange={(e) => setValues({ ...values, name: e.target.value })} />
-        {errors.name && <span className="pt-error" role="alert">{errors.name}</span>}
+        <input
+          value={values.name}
+          onChange={(e) => setValues({ ...values, name: e.target.value })}
+          aria-invalid={errors.name ? "true" : undefined}
+          aria-describedby={errors.name ? "team-name-error" : undefined}
+        />
+        {errors.name && <span id="team-name-error" className="pt-error" role="alert">{errors.name}</span>}
       </label>
 
       <label>
@@ -44,8 +51,47 @@ export function TeamForm({ team, teams, saving, error, onSubmit, onCancel }: Pro
           rows={4}
           value={values.description}
           onChange={(e) => setValues({ ...values, description: e.target.value })}
+          aria-invalid={errors.description ? "true" : undefined}
+          aria-describedby={errors.description ? "team-description-error" : undefined}
         />
-        {errors.description && <span className="pt-error" role="alert">{errors.description}</span>}
+        {errors.description && (
+          <span id="team-description-error" className="pt-error" role="alert">{errors.description}</span>
+        )}
+      </label>
+
+      <label>
+        Research areas
+        <select
+          multiple
+          className="pt-select"
+          value={values.areaIds}
+          onChange={(e) =>
+            setValues({ ...values, areaIds: Array.from(e.target.selectedOptions, (option) => option.value) })
+          }
+          aria-invalid={errors.areaIds ? "true" : undefined}
+          aria-describedby={errors.areaIds ? "team-areas-error" : undefined}
+        >
+          {researchAreas.map((area) => (
+            <option key={area.id} value={area.id}>{area.name}</option>
+          ))}
+        </select>
+        {errors.areaIds && <span id="team-areas-error" className="pt-error" role="alert">{errors.areaIds}</span>}
+      </label>
+
+      <label>
+        Leader
+        <select
+          value={values.leaderId}
+          onChange={(e) => setValues({ ...values, leaderId: e.target.value })}
+          aria-invalid={errors.leaderId ? "true" : undefined}
+          aria-describedby={errors.leaderId ? "team-leader-error" : undefined}
+        >
+          <option value="">Select a leader</option>
+          {researchers.map((researcher) => (
+            <option key={researcher.id} value={researcher.id}>{researcher.name}</option>
+          ))}
+        </select>
+        {errors.leaderId && <span id="team-leader-error" className="pt-error" role="alert">{errors.leaderId}</span>}
       </label>
 
       {error && <p className="pt-error" role="alert">{error}</p>}
