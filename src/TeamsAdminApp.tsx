@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { TeamsApi } from "./api";
 import { TeamForm } from "./TeamForm";
-import type { Team, TeamInput } from "./types";
+import type { Researcher, Team, TeamInput } from "./types";
 import "./styles.css";
 
 export interface TeamsAdminProps {
@@ -13,12 +13,14 @@ type Mode = { kind: "list" } | { kind: "create" } | { kind: "edit"; team: Team }
 
 export function TeamsAdminApp({ api }: TeamsAdminProps) {
   const [teams, setTeams] = useState<Team[]>([]);
+  const [researchers, setResearchers] = useState<Researcher[]>([]);
   const [mode, setMode] = useState<Mode>({ kind: "list" });
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string>();
 
   useEffect(() => {
     void api.listTeams().then(setTeams);
+    void api.listResearchers().then(setResearchers);
   }, [api]);
 
   async function save(input: TeamInput) {
@@ -47,6 +49,7 @@ export function TeamsAdminApp({ api }: TeamsAdminProps) {
           key={mode.kind === "edit" ? mode.team.id : "new"}
           team={mode.kind === "edit" ? mode.team : undefined}
           teams={teams}
+          researchers={researchers}
           saving={saving}
           error={saveError}
           onSubmit={(input) => void save(input)}
