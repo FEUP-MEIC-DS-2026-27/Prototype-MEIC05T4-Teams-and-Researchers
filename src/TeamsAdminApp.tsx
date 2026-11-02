@@ -47,6 +47,19 @@ export function TeamsAdminApp({ api, isAdmin }: TeamsAdminProps) {
     };
   }, [api, loadAttempt]);
 
+  useEffect(() => {
+    let active = true;
+    api.listAreas().then((loadedAreas) => {
+      if (active) setAreas(loadedAreas);
+    }).catch((err) => {
+      console.error("Failed to load areas:", err);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [api]);
+
   // Lookups only used to display names in the table; the table falls back to raw ids.
   useEffect(() => {
     void api.listAreas().then(setAreas, () => undefined);
@@ -86,6 +99,8 @@ export function TeamsAdminApp({ api, isAdmin }: TeamsAdminProps) {
           key={mode.kind === "edit" ? mode.team.id : "new"}
           team={mode.kind === "edit" ? mode.team : undefined}
           teams={teams}
+          researchAreas={areas}
+          researchers={researchers}
           saving={saving}
           error={saveError}
           onSubmit={(input) => void save(input)}

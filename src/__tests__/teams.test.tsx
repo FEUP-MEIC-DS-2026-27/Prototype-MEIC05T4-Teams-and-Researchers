@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createMemoryApi } from "../memoryApi";
 import { mount, unmount } from "../mount";
@@ -15,8 +15,14 @@ describe("TeamsAdminApp", () => {
     render(<TeamsAdminApp api={createMemoryApi()} isAdmin />);
     await user.click(await screen.findByText("New team"));
     await user.type(screen.getByLabelText("Name"), "Data Crew");
+    await user.type(screen.getByLabelText("Description"), "A team for data research.");
+    await user.selectOptions(screen.getByLabelText("Research areas"), ["ds", "se"]);
+    await user.selectOptions(screen.getByLabelText("Leader"), "r3");
     await user.click(screen.getByRole("button", { name: "Save" }));
-    expect(await screen.findByText("Data Crew")).toBeInTheDocument();
+    const row = (await screen.findByRole("rowheader", { name: "Data Crew" })).closest("tr")!;
+    expect(within(row).getByText("Data Science")).toBeInTheDocument();
+    expect(within(row).getByText("Software Engineering")).toBeInTheDocument();
+    expect(within(row).getByText("Carla Nogueira")).toBeInTheDocument();
   });
 
   it("edits a team", async () => {
@@ -26,12 +32,26 @@ describe("TeamsAdminApp", () => {
     const name = screen.getByLabelText("Name");
     await user.clear(name);
     await user.type(name, "Interaction Group");
+    await user.selectOptions(screen.getByLabelText("Research areas"), ["se", "sec"]);
+    await user.selectOptions(screen.getByLabelText("Leader"), "r4");
     await user.click(screen.getByRole("button", { name: "Save" }));
-    expect(await screen.findByText("Interaction Group")).toBeInTheDocument();
+    const row = (await screen.findByRole("rowheader", { name: "Interaction Group" })).closest("tr")!;
+    expect(within(row).getByText("Software Engineering")).toBeInTheDocument();
+    expect(within(row).getByText("Cybersecurity")).toBeInTheDocument();
+    expect(within(row).getByText("Diogo Faria")).toBeInTheDocument();
   });
 
-  it.todo("validates required fields");
-  it.todo("saves research areas and leader");
+  it("validates required fields", async () => {
+    const user = userEvent.setup();
+    render(<TeamsAdminApp api={createMemoryApi()} isAdmin />);
+    await user.click(await screen.findByText("New team"));
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(await screen.findByText("Name is required.")).toBeInTheDocument();
+    expect(screen.getByText("Description is required.")).toBeInTheDocument();
+    expect(screen.getByText("Select at least one research area.")).toBeInTheDocument();
+    expect(screen.getByText("Leader is required.")).toBeInTheDocument();
+  });
   it("is read-only for non-admins", async () => {
     render(<TeamsAdminApp api={createMemoryApi()} isAdmin={false} />);
     expect(await screen.findByText("Interaction Lab")).toBeInTheDocument();
@@ -99,6 +119,25 @@ describe("TeamsAdminApp", () => {
     expect(screen.queryByText("New team")).not.toBeInTheDocument();
     await act(async () => unmount(el));
     el.remove();
+  });
+
+  it("saves research areas", async () => {
+    const user = userEvent.setup();
+    const api = createMemoryApi();
+    const createSpy = vi.spyOn(api, 'createTeam');
+    render(<TeamsAdminApp api={api} isAdmin />);
+    await user.click(await screen.findByText("New team"));
+    await user.type(screen.getByLabelText("Name"), "Data & AI Team");
+    const areasSelect = screen.getByLabelText("Research Areas");
+    await user.selectOptions(areasSelect, ["Artificial Intelligence", "Data Science"]);
+    await user.click(screen.getByRole("button", { name: "Save" }));
+    expect(await screen.findByText("Data & AI Team")).toBeInTheDocument();
+    expect(createSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: "Data & AI Team",
+        areaIds: ["ai", "ds"] 
+      })
+    );
   });
 
   it.todo("handles API errors");
