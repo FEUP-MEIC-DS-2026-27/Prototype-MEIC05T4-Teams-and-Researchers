@@ -60,25 +60,6 @@ export function TeamForm({ team, teams, researchAreas, researchers, saving, erro
       </label>
 
       <label>
-        Research areas
-        <select
-          multiple
-          className="pt-select"
-          value={values.areaIds}
-          onChange={(e) =>
-            setValues({ ...values, areaIds: Array.from(e.target.selectedOptions, (option) => option.value) })
-          }
-          aria-invalid={errors.areaIds ? "true" : undefined}
-          aria-describedby={errors.areaIds ? "team-areas-error" : undefined}
-        >
-          {researchAreas.map((area) => (
-            <option key={area.id} value={area.id}>{area.name}</option>
-          ))}
-        </select>
-        {errors.areaIds && <span id="team-areas-error" className="pt-error" role="alert">{errors.areaIds}</span>}
-      </label>
-
-      <label>
         Leader
         <select
           value={values.leaderId}
@@ -92,6 +73,25 @@ export function TeamForm({ team, teams, researchAreas, researchers, saving, erro
           ))}
         </select>
         {errors.leaderId && <span id="team-leader-error" className="pt-error" role="alert">{errors.leaderId}</span>}
+      </label>
+
+      <label> 
+        Research Areas
+        <select
+          multiple
+          value={values.areaIds}
+          onChange={(e) => {
+            const selected = Array.from(e.target.selectedOptions, (opt) => opt.value);
+            setValues({ ...values, areaIds: selected });
+          }}
+          className="pt-select"
+        >
+          {researchAreas?.map((area) => (
+            <option key={area.id} value={area.id}>
+              {area.name}
+            </option>
+          ))}
+        </select>
       </label>
 
       {error && <p className="pt-error" role="alert">{error}</p>}
