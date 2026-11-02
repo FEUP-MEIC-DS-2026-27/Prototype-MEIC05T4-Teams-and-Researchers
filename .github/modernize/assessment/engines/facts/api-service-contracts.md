@@ -53,7 +53,12 @@ No health, metrics, or management endpoints are defined by this microfrontend co
 - No retries, timeouts, circuit breakers, asynchronous messaging, service discovery, or gateway aggregation behavior is implemented or configured in this repository.
 - The paths have no API version prefix. A deployment prefix can be supplied through the gateway base URL.
 - TLS is not configured in this repository; deployed environments should use HTTPS at the gateway, especially when forwarding bearer tokens.
-- The client currently reports generic status-based errors except for `401` and `403`; it does not parse the proposed `ApiError` body yet.
+- Error handling in the client ([api.ts](../../../../../src/api.ts)):
+  - `401` is presented as an expired session and `403` as a missing permission; neither body is read.
+  - For other failures, the `message` of a JSON `ApiError` body is shown. A body that is not JSON (for example an HTML error page from the gateway) is ignored and a status-based message is shown instead.
+  - `fieldErrors` are mapped onto the matching form fields (`name`, `description`, `areaIds`, `leaderId`; unknown keys are dropped). A `409` is treated as a team-name conflict and shown on the name field, as the OpenAPI file documents it only as such.
+  - A network failure is reported as an unreachable server.
+- Successful responses are checked against the documented shape (every `Team` field except `updatedAt`, which the UI never reads; `id` and `name` for lookups). Anything else is reported as an unexpected response, with Retry, instead of reaching the UI. As a last resort, the microfrontend wraps itself in an error boundary so a rendering crash cannot blank the Shell's slot.
 
 ## Service Technology Matrix
 

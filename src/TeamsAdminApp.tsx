@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import type { TeamsApi } from "./api";
+import { ApiError, type TeamsApi } from "./api";
 import { TeamForm } from "./TeamForm";
 import { TeamsTable } from "./TeamsTable";
-import type { ResearchArea, Researcher, Team, TeamInput } from "./types";
+import type { ResearchArea, Researcher, Team, TeamErrors, TeamInput } from "./types";
 import "./styles.css";
 
 export interface TeamsAdminProps {
@@ -12,6 +12,10 @@ export interface TeamsAdminProps {
 
 type Mode = { kind: "list" } | { kind: "create" } | { kind: "edit"; team: Team };
 
+function errorText(error: unknown, fallback: string): string {
+  return error instanceof Error ? error.message : fallback;
+}
+
 export function TeamsAdminApp({ api, isAdmin }: TeamsAdminProps) {
   const [teams, setTeams] = useState<Team[]>([]);
   const [mode, setMode] = useState<Mode>({ kind: "list" });
@@ -20,8 +24,10 @@ export function TeamsAdminApp({ api, isAdmin }: TeamsAdminProps) {
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string>();
+  const [saveFieldErrors, setSaveFieldErrors] = useState<TeamErrors>();
   const [areas, setAreas] = useState<ResearchArea[]>([]);
   const [researchers, setResearchers] = useState<Researcher[]>([]);
+  const [lookupError, setLookupError] = useState<string>();
   const [notice, setNotice] = useState<string>();
 
   useEffect(() => {
@@ -35,7 +41,7 @@ export function TeamsAdminApp({ api, isAdmin }: TeamsAdminProps) {
       },
       (error: unknown) => {
         if (active) {
-          setLoadError(error instanceof Error ? error.message : "Failed to load the teams.");
+          setLoadError(errorText(error, "Failed to load the teams."));
         }
       },
     ).finally(() => {
@@ -47,33 +53,45 @@ export function TeamsAdminApp({ api, isAdmin }: TeamsAdminProps) {
     };
   }, [api, loadAttempt]);
 
+  // Lookups feed the form's area and leader pickers and the table's names. One failing
+  // does not discard the other; the table falls back to raw ids.
   useEffect(() => {
     let active = true;
-    api.listAreas().then((loadedAreas) => {
-      if (active) setAreas(loadedAreas);
-    }).catch((err) => {
-      console.error("Failed to load areas:", err);
-    });
+    setLookupError(undefined);
+
+    Promise.allSettled([api.listAreas(), api.listResearchers()]).then(
+      ([loadedAreas, loadedResearchers]) => {
+        if (!active) return;
+        if (loadedAreas.status === "fulfilled") setAreas(loadedAreas.value);
+        if (loadedResearchers.status === "fulfilled") setResearchers(loadedResearchers.value);
+
+        const failure = [loadedAreas, loadedResearchers].find(
+          (result): result is PromiseRejectedResult => result.status === "rejected",
+        );
+        if (failure) {
+          setLookupError(
+            `Could not load research areas or researchers: ${errorText(failure.reason, "unknown error")}`,
+          );
+        }
+      },
+    );
 
     return () => {
       active = false;
     };
-  }, [api]);
-
-  // Lookups only used to display names in the table; the table falls back to raw ids.
-  useEffect(() => {
-    void api.listAreas().then(setAreas, () => undefined);
-    void api.listResearchers().then(setResearchers, () => undefined);
-  }, [api]);
+  }, [api, loadAttempt]);
 
   function openForm(next: Mode) {
     setNotice(undefined);
+    setSaveError(undefined);
+    setSaveFieldErrors(undefined);
     setMode(next);
   }
 
   async function save(input: TeamInput) {
     setSaving(true);
     setSaveError(undefined);
+    setSaveFieldErrors(undefined);
     try {
       if (mode.kind === "edit") {
         const updated = await api.updateTeam(mode.team.id, input);
@@ -86,15 +104,29 @@ export function TeamsAdminApp({ api, isAdmin }: TeamsAdminProps) {
       }
       setMode({ kind: "list" });
     } catch (error) {
-      setSaveError(error instanceof Error ? error.message : "Failed to save the team.");
+      if (error instanceof ApiError && error.fieldErrors) {
+        setSaveFieldErrors(error.fieldErrors);
+      } else {
+        setSaveError(errorText(error, "Failed to save the team."));
+      }
     } finally {
       setSaving(false);
     }
   }
 
+  // Retry reloads teams and lookups together, so one button covers every failed request.
+  const retry = () => setLoadAttempt((attempt) => attempt + 1);
+  const lookupBanner = lookupError && (
+    <div className="pt-load-error">
+      <p className="pt-error" role="alert">{lookupError}</p>
+      <button onClick={retry}>Retry</button>
+    </div>
+  );
+
   if (isAdmin && mode.kind !== "list") {
     return (
       <div className="pt-root">
+        {lookupBanner}
         <TeamForm
           key={mode.kind === "edit" ? mode.team.id : "new"}
           team={mode.kind === "edit" ? mode.team : undefined}
@@ -103,8 +135,9 @@ export function TeamsAdminApp({ api, isAdmin }: TeamsAdminProps) {
           researchers={researchers}
           saving={saving}
           error={saveError}
+          serverErrors={saveFieldErrors}
           onSubmit={(input) => void save(input)}
-          onCancel={() => setMode({ kind: "list" })}
+          onCancel={() => openForm({ kind: "list" })}
         />
       </div>
     );
@@ -124,12 +157,13 @@ export function TeamsAdminApp({ api, isAdmin }: TeamsAdminProps) {
         </p>
       )}
       {notice && <p className="pt-notice" role="status">{notice}</p>}
+      {!loadError && lookupBanner}
       {loading ? (
         <p role="status">Loading teams…</p>
       ) : loadError ? (
         <div className="pt-load-error">
           <p className="pt-error" role="alert">{loadError}</p>
-          <button onClick={() => setLoadAttempt((attempt) => attempt + 1)}>Retry</button>
+          <button onClick={retry}>Retry</button>
         </div>
       ) : (
         <TeamsTable

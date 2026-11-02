@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { createHttpApi, type TeamsApi } from "./api";
+import { ErrorBoundary } from "./ErrorBoundary";
 import { createMemoryApi } from "./memoryApi";
 import { TeamsAdminApp } from "./TeamsAdminApp";
 
@@ -27,8 +28,10 @@ export function mount(el: Element, options: MountOptions): void {
   roots.set(el, root);
   root.render(
     <StrictMode>
-      {/* Fail closed: anything but a real `true` from the Shell is read-only. */}
-      <TeamsAdminApp api={api} isAdmin={options.isAdmin === true} />
+      <ErrorBoundary>
+        {/* Fail closed: anything but a real `true` from the Shell is read-only. */}
+        <TeamsAdminApp api={api} isAdmin={options.isAdmin === true} />
+      </ErrorBoundary>
     </StrictMode>,
   );
 }
