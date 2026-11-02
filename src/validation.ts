@@ -32,7 +32,7 @@ export function validateTeam(input: TeamInput, existing: Team[], editingId?: str
     errors.description = `Description must be between ${TEAM_DESCRIPTION_MIN_LENGTH} and ${TEAM_DESCRIPTION_MAX_LENGTH} characters.`;
   }
 
-  if (input.areaIds.length === 0) {
+  if (!input.areaIds.some((areaId) => areaId.trim().length > 0)) {
     errors.areaIds = "Select at least one research area.";
   }
 

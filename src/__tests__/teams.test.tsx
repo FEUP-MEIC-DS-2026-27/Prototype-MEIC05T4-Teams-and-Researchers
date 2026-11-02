@@ -15,6 +15,7 @@ describe("TeamsAdminApp", () => {
     render(<TeamsAdminApp api={createMemoryApi()} isAdmin />);
     await user.click(await screen.findByText("New team"));
     await user.type(screen.getByLabelText("Name"), "Data Crew");
+    await user.type(screen.getByLabelText("Description"), "A team for data research.");
     await user.click(screen.getByRole("button", { name: "Save" }));
     expect(await screen.findByText("Data Crew")).toBeInTheDocument();
   });
@@ -30,7 +31,15 @@ describe("TeamsAdminApp", () => {
     expect(await screen.findByText("Interaction Group")).toBeInTheDocument();
   });
 
-  it.todo("validates required fields");
+  it("validates required fields", async () => {
+    const user = userEvent.setup();
+    render(<TeamsAdminApp api={createMemoryApi()} isAdmin />);
+    await user.click(await screen.findByText("New team"));
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(await screen.findByText("Name is required.")).toBeInTheDocument();
+    expect(screen.getByText("Description is required.")).toBeInTheDocument();
+  });
   it.todo("saves research areas and leader");
   it("is read-only for non-admins", async () => {
     render(<TeamsAdminApp api={createMemoryApi()} isAdmin={false} />);

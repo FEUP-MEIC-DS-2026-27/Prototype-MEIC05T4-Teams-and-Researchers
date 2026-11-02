@@ -40,6 +40,9 @@ describe("validateTeam", () => {
 
     expect(errors.areaIds).toBe("Select at least one research area.");
     expect(errors.leaderId).toBe("Leader is required.");
+    expect(validateTeam({ ...validInput, areaIds: ["  "] }, []).areaIds).toBe(
+      "Select at least one research area.",
+    );
   });
 
   it("enforces name and description limits", () => {
@@ -54,6 +57,19 @@ describe("validateTeam", () => {
 
     expect(errors.name).toMatch(/between 1 and 100/);
     expect(errors.description).toMatch(/between 1 and 500/);
+  });
+
+  it("accepts names and descriptions at their maximum lengths", () => {
+    const errors = validateTeam(
+      {
+        ...validInput,
+        name: "n".repeat(TEAM_NAME_MAX_LENGTH),
+        description: "d".repeat(TEAM_DESCRIPTION_MAX_LENGTH),
+      },
+      [],
+    );
+
+    expect(errors).toEqual({});
   });
 
   it("rejects duplicate names ignoring case and surrounding whitespace", () => {
