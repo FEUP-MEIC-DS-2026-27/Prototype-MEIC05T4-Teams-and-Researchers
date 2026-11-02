@@ -29,6 +29,19 @@ export function TeamsAdminApp({ api, isAdmin }: TeamsAdminProps) {
       .then(setTeams, (e) => setLoadError(e instanceof Error ? e.message : "Failed to load the teams."));
   }, [api]);
 
+  useEffect(() => {
+    let active = true;
+    api.listAreas().then((loadedAreas) => {
+      if (active) setAreas(loadedAreas);
+    }).catch((err) => {
+      console.error("Failed to load areas:", err);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [api]);
+
   // Lookups only used to display names in the table; the table falls back to raw ids.
   useEffect(() => {
     void api.listAreas().then(setAreas, () => undefined);

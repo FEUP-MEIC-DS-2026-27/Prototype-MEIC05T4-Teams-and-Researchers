@@ -96,5 +96,24 @@ describe("TeamsAdminApp", () => {
     el.remove();
   });
 
+  it("saves research areas", async () => {
+    const user = userEvent.setup();
+    const api = createMemoryApi();
+    const createSpy = vi.spyOn(api, 'createTeam');
+    render(<TeamsAdminApp api={api} isAdmin />);
+    await user.click(await screen.findByText("New team"));
+    await user.type(screen.getByLabelText("Name"), "Data & AI Team");
+    const areasSelect = screen.getByLabelText("Research Areas");
+    await user.selectOptions(areasSelect, ["Artificial Intelligence", "Data Science"]);
+    await user.click(screen.getByRole("button", { name: "Save" }));
+    expect(await screen.findByText("Data & AI Team")).toBeInTheDocument();
+    expect(createSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: "Data & AI Team",
+        areaIds: ["ai", "ds"] 
+      })
+    );
+  });
+
   it.todo("handles API errors");
 });
