@@ -68,6 +68,8 @@ export function TeamsAdminApp({ api, isAdmin }: TeamsAdminProps) {
           key={mode.kind === "edit" ? mode.team.id : "new"}
           team={mode.kind === "edit" ? mode.team : undefined}
           teams={teams}
+          researchAreas={areas}
+          researchers={researchers}
           saving={saving}
           error={saveError}
           onSubmit={(input) => void save(input)}
