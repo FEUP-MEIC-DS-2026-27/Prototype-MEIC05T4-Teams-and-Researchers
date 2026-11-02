@@ -1,0 +1,329 @@
+openapi: 3.0.3
+info:
+  title: People & Teams REST API
+  version: 0.1.0
+  description: |
+    Proposed backend contract derived from the People & Teams microfrontend and
+    aligned to the ERD shared for this project.
+    Paths are relative to the API Gateway base URL supplied by the host Shell.
+    The current client does not include an API version prefix in its paths.
+    Database serial IDs are exposed as strings to preserve the current frontend contract.
+servers:
+  - url: /
+    description: Replace with the API Gateway root or configured path prefix.
+tags:
+  - name: Teams
+  - name: Lookups
+security:
+  - {}
+  - bearerAuth: []
+paths:
+  /teams:
+    get:
+      tags: [Teams]
+      operationId: listTeams
+      summary: List teams
+      description: Returns all teams. The current microfrontend applies name and research-area filters client-side.
+      responses:
+        '200':
+          description: Team directory.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Team'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Teams]
+      operationId: createTeam
+      summary: Create a team
+      description: Admin-only. The backend must enforce authorization and team-name uniqueness.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamInput'
+      responses:
+        '201':
+          description: Team created.
+          headers:
+            Location:
+              description: URI of the created team.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /teams/{id}:
+    put:
+      tags: [Teams]
+      operationId: updateTeam
+      summary: Replace a team
+      description: |
+        Admin-only full replacement of the editable team fields. The backend preserves
+        the team ID and sets updatedAt. A repeated request with the same body is idempotent.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Team identifier.
+          schema:
+            type: string
+            minLength: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamInput'
+      responses:
+        '200':
+          description: Updated team.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /research-areas:
+    get:
+      tags: [Lookups]
+      operationId: listAreas
+      summary: List research areas
+      description: Returns the research-area options used by the team form and directory.
+      responses:
+        '200':
+          description: Research areas.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResearchArea'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /researchers:
+    get:
+      tags: [Lookups]
+      operationId: listResearchers
+      summary: List researchers
+      description: Returns the researcher options used to select and display team leaders.
+      responses:
+        '200':
+          description: Researchers.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Researcher'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    TeamInput:
+      type: object
+      description: |
+        Writable fields shared by team creation and full replacement. Team status
+        is managed by the backend and is not supplied by the current form.
+      required:
+        - name
+        - description
+        - areaIds
+        - leaderId
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Trim whitespace before validation and storage; unique case-insensitively across teams.
+          example: Interaction Lab
+        description:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: Trim whitespace before validation and storage.
+          example: Design and evaluation of interactive systems centred on people.
+        areaIds:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          description: |
+            IDs of existing research topics. The API calls these research areas;
+            the backend maps them to research_topics through team_topics.
+          items:
+            type: string
+            minLength: 1
+          example: [hci, se]
+        leaderId:
+          type: string
+          minLength: 1
+          description: |
+            ID of an existing researcher. The backend maps this to the team's
+            team_members row with is_leader set to true.
+          example: r1
+    Team:
+      description: |
+        Frontend projection of a team. The ERD has no updated_at column, although
+        the current frontend contract requires updatedAt; resolve this mismatch
+        before implementing the response.
+      allOf:
+        - $ref: '#/components/schemas/TeamInput'
+        - type: object
+          required:
+            - id
+            - updatedAt
+          properties:
+            id:
+              type: string
+              minLength: 1
+              readOnly: true
+              description: String representation of the database serial ID.
+              example: t1
+            updatedAt:
+              type: string
+              format: date-time
+              readOnly: true
+              description: |
+                Timestamp of the latest creation or update in ISO 8601 format.
+                This field is expected by the current frontend but is absent from
+                the supplied ERD.
+              example: '2026-02-03T10:00:00.000Z'
+    ResearchArea:
+      type: object
+      description: API-facing projection of a research_topics row.
+      required: [id, name]
+      properties:
+        id:
+          type: string
+          minLength: 1
+          example: hci
+        name:
+          type: string
+          minLength: 1
+          example: Human-Computer Interaction
+    Researcher:
+      type: object
+      description: API-facing projection of a researchers row; other researcher fields are not used by this UI.
+      required: [id, name]
+      properties:
+        id:
+          type: string
+          minLength: 1
+          example: r1
+        name:
+          type: string
+          minLength: 1
+          example: Ana Ribeiro
+    ApiError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: VALIDATION_ERROR
+        message:
+          type: string
+          example: Request validation failed.
+        fieldErrors:
+          type: object
+          description: Optional field-specific messages keyed by TeamInput property.
+          additionalProperties:
+            type: string
+          example:
+            name: A team with this name already exists.
+  responses:
+    BadRequest:
+      description: Invalid request body or referenced lookup IDs.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            code: VALIDATION_ERROR
+            message: Request validation failed.
+            fieldErrors:
+              name: Name is required.
+    Unauthorized:
+      description: Missing or invalid authentication when required by the gateway.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            code: UNAUTHORIZED
+            message: Authentication is required or has expired.
+    Forbidden:
+      description: The authenticated user is not allowed to create or update teams.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            code: FORBIDDEN
+            message: Administrator role is required.
+    NotFound:
+      description: No team exists with the requested ID.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            code: TEAM_NOT_FOUND
+            message: Team not found.
+    Conflict:
+      description: A team with the same normalized name already exists.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            code: TEAM_NAME_CONFLICT
+            message: A team with this name already exists.
+    InternalServerError:
+      description: Unexpected server error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            code: INTERNAL_ERROR
+            message: An unexpected error occurred.
