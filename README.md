@@ -7,14 +7,6 @@ o administrador cria e edita equipas formais (nome, descrição, áreas de inves
 Já funciona: listar equipas, criar e editar (nome + descrição) com dados em memória.
 O resto está marcado com `TODO [Pessoa N]` no código. O protótipo completo anterior está na branch `v1-geral`.
 
-## Cliente HTTP
-
-`mount()` aceita `apiBaseUrl` para ligar ao API Gateway; sem este valor, usa os dados
-de demonstração em memória. O cliente HTTP espera respostas JSON nos endpoints
-`GET /teams`, `GET /research-areas`, `GET /researchers`, `POST /teams` e
-`PUT /teams/{id}`. Se fornecido, `getToken` é chamado em cada pedido e o valor é
-enviado como token Bearer.
-
 ```sh
 npm install
 npm run dev
