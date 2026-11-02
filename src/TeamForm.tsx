@@ -75,24 +75,28 @@ export function TeamForm({ team, teams, researchAreas, researchers, saving, erro
         {errors.leaderId && <span id="team-leader-error" className="pt-error" role="alert">{errors.leaderId}</span>}
       </label>
 
-      <label> 
-        Research Areas
-        <select
-          multiple
-          value={values.areaIds}
-          onChange={(e) => {
-            const selected = Array.from(e.target.selectedOptions, (opt) => opt.value);
-            setValues({ ...values, areaIds: selected });
-          }}
-          className="pt-select"
-        >
-          {researchAreas?.map((area) => (
-            <option key={area.id} value={area.id}>
-              {area.name}
-            </option>
-          ))}
-        </select>
-      </label>
+      <fieldset className="pt-fieldset" style={{ border: "none", padding: 0, margin: 0 }}>
+        <legend style={{ fontWeight: "bold", marginBottom: "8px" }}>Research Areas</legend>
+        {researchAreas?.map((area) => (
+          <label key={area.id} style={{ display: "block", marginBottom: "4px" }}>
+            <input
+              type="checkbox"
+              value={area.id}
+              checked={values.areaIds.includes(area.id)}
+              onChange={(e) => {
+                const isChecked = e.target.checked;
+                const newAreaIds = isChecked
+                  ? [...values.areaIds, area.id]
+                  : values.areaIds.filter((id) => id !== area.id);
+                  
+                setValues({ ...values, areaIds: newAreaIds });
+              }}
+              style={{ marginRight: "8px" }}
+            />
+            {area.name}
+          </label>
+        ))}
+      </fieldset>
 
       {error && <p className="pt-error" role="alert">{error}</p>}
 
