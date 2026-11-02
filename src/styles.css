@@ -16,3 +16,13 @@
 .pt-error { color: #b00020; font-weight: 400; }
 .pt-notice { background: #e6f4ea; padding: .5rem; border-radius: 4px; }
 .pt-readonly { background: #eef2f7; padding: .5rem; border-radius: 4px; margin: .5rem 0 0; }
+.pt-filters { display: flex; flex-wrap: wrap; gap: .75rem; align-items: flex-end; margin-top: 1rem; }
+.pt-filters label { display: flex; flex-direction: column; gap: .25rem; font-weight: 600; }
+.pt-filters input, .pt-filters select { padding: .5rem; font: inherit; border: 1px solid #999; border-radius: 4px; }
+.pt-count { color: #555; margin: .75rem 0 0; }
+.pt-table tbody th { font-weight: 600; }
+.pt-table tbody tr:hover { background: #f5f8fc; }
+.pt-tags { display: flex; flex-wrap: wrap; gap: .25rem; list-style: none; margin: 0; padding: 0; }
+.pt-tags li { background: #e8eef7; border-radius: 999px; padding: .1rem .6rem; font-size: .85rem; }
+.pt-root :focus-visible { outline: 2px solid #0b5cad; outline-offset: 2px; }
+.pt-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

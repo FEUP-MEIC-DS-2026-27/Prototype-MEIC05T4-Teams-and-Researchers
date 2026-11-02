@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import type { TeamsApi } from "./api";
 import { TeamForm } from "./TeamForm";
-import type { Team, TeamInput } from "./types";
+import { TeamsTable } from "./TeamsTable";
+import type { ResearchArea, Researcher, Team, TeamInput } from "./types";
 import "./styles.css";
 
 export interface TeamsAdminProps {
@@ -17,6 +18,9 @@ export function TeamsAdminApp({ api, isAdmin }: TeamsAdminProps) {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string>();
   const [loadError, setLoadError] = useState<string>();
+  const [areas, setAreas] = useState<ResearchArea[]>([]);
+  const [researchers, setResearchers] = useState<Researcher[]>([]);
+  const [notice, setNotice] = useState<string>();
 
   useEffect(() => {
     setLoadError(undefined);
@@ -25,6 +29,17 @@ export function TeamsAdminApp({ api, isAdmin }: TeamsAdminProps) {
       .then(setTeams, (e) => setLoadError(e instanceof Error ? e.message : "Failed to load the teams."));
   }, [api]);
 
+  // Lookups only used to display names in the table; the table falls back to raw ids.
+  useEffect(() => {
+    void api.listAreas().then(setAreas, () => undefined);
+    void api.listResearchers().then(setResearchers, () => undefined);
+  }, [api]);
+
+  function openForm(next: Mode) {
+    setNotice(undefined);
+    setMode(next);
+  }
+
   async function save(input: TeamInput) {
     setSaving(true);
     setSaveError(undefined);
@@ -32,9 +47,11 @@ export function TeamsAdminApp({ api, isAdmin }: TeamsAdminProps) {
       if (mode.kind === "edit") {
         const updated = await api.updateTeam(mode.team.id, input);
         setTeams((ts) => ts.map((t) => (t.id === updated.id ? updated : t)));
+        setNotice(`Team "${updated.name}" updated.`);
       } else {
         const created = await api.createTeam(input);
         setTeams((ts) => [...ts, created]);
+        setNotice(`Team "${created.name}" created.`);
       }
       setMode({ kind: "list" });
     } catch (e) {
@@ -65,7 +82,7 @@ export function TeamsAdminApp({ api, isAdmin }: TeamsAdminProps) {
       <header className="pt-header">
         <h1>Teams</h1>
         {isAdmin && (
-          <button className="pt-primary" onClick={() => setMode({ kind: "create" })}>New team</button>
+          <button className="pt-primary" onClick={() => openForm({ kind: "create" })}>New team</button>
         )}
       </header>
       {!isAdmin && (
@@ -73,27 +90,15 @@ export function TeamsAdminApp({ api, isAdmin }: TeamsAdminProps) {
           You have read-only access. Only administrators can create or edit teams.
         </p>
       )}
+      {notice && <p className="pt-notice" role="status">{notice}</p>}
       {loadError && <p className="pt-error" role="alert">{loadError}</p>}
-      <table className="pt-table">
-        <thead>
-          <tr><th>Name</th><th>Description</th>{isAdmin && <th />}</tr>
-        </thead>
-        <tbody>
-          {teams.map((t) => (
-            <tr key={t.id}>
-              <td>{t.name}</td>
-              <td>{t.description}</td>
-              {isAdmin && (
-                <td>
-                  <button aria-label={`Edit ${t.name}`} onClick={() => setMode({ kind: "edit", team: t })}>
-                    Edit
-                  </button>
-                </td>
-              )}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <TeamsTable
+        teams={teams}
+        areas={areas}
+        researchers={researchers}
+        isAdmin={isAdmin}
+        onEdit={(team) => openForm({ kind: "edit", team })}
+      />
     </div>
   );
 }
