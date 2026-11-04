@@ -87,10 +87,10 @@ describe("TeamsAdminApp", () => {
     expect(await screen.findByText("Interaction Lab")).toBeInTheDocument();
     expect(screen.queryByText("New team")).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/^Edit /)).not.toBeInTheDocument();
-    expect(screen.getByRole("note")).toHaveTextContent("read-only access");
+    expect(screen.queryByText(/read-only access/)).not.toBeInTheDocument();
   });
 
-  it("does not show the read-only note to admins", async () => {
+  it("does not show a note to admins", async () => {
     render(<TeamsAdminApp api={createMemoryApi()} isAdmin />);
     await screen.findByText("Interaction Lab");
     expect(screen.queryByRole("note")).not.toBeInTheDocument();

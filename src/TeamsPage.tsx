@@ -3,8 +3,13 @@ import { ErrorBoundary } from "./ErrorBoundary";
 import { createMemoryApi } from "./memoryApi";
 import { TeamsAdminApp } from "./TeamsAdminApp";
 
-/** Read-only React entry point for embedding the teams directory in the VA1 router. */
-export default function TeamsPage() {
+export interface TeamsPageProps {
+  /** UI hint from the Shell's authenticated session. The API must still authorize every write. */
+  isAdmin?: boolean;
+}
+
+/** React entry point for embedding the teams directory in the VA1 router. */
+export default function TeamsPage({ isAdmin = false }: TeamsPageProps) {
   const api = useMemo(() => createMemoryApi(), []);
 
   return (
@@ -15,8 +20,7 @@ export default function TeamsPage() {
       </div>
       <TeamsAdminApp
         api={api}
-        isAdmin={false}
-        readOnlyMessage="Team administration is disabled in this demonstration."
+        isAdmin={isAdmin}
       />
     </ErrorBoundary>
   );

@@ -8,7 +8,6 @@ export interface TeamsAdminProps {
   api: TeamsApi;
   /** UI hint only. The API must enforce the same permission on every write. */
   isAdmin: boolean;
-  readOnlyMessage?: string;
   demoMode?: boolean;
 }
 
@@ -18,7 +17,7 @@ function errorText(error: unknown, fallback: string): string {
   return error instanceof Error ? error.message : fallback;
 }
 
-export function TeamsAdminApp({ api, isAdmin, readOnlyMessage, demoMode = false }: TeamsAdminProps) {
+export function TeamsAdminApp({ api, isAdmin, demoMode = false }: TeamsAdminProps) {
   const [teams, setTeams] = useState<Team[]>([]);
   const [mode, setMode] = useState<Mode>({ kind: "list" });
   const [loading, setLoading] = useState(true);
@@ -161,11 +160,6 @@ export function TeamsAdminApp({ api, isAdmin, readOnlyMessage, demoMode = false 
           <button className="btn btn-primary" onClick={() => openForm({ kind: "create" })}>New team</button>
         )}
       </header>
-      {!isAdmin && (
-        <p className="alert alert-info py-2 mb-0" role="note">
-          {readOnlyMessage ?? "You have read-only access. Only administrators can create or edit teams."}
-        </p>
-      )}
       {notice && <p className="alert alert-success py-2 mb-0" role="status">{notice}</p>}
       {!loadError && lookupBanner}
       {loading ? (
