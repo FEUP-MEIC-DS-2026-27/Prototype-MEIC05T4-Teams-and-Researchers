@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import type { ResearchArea, Researcher, Team, TeamErrors, TeamInput } from "./types";
 import { validateTeam } from "./validation";
 
@@ -9,11 +9,23 @@ interface Props {
   researchers: Researcher[];
   saving: boolean;
   error?: string;
+  /** Per-field problems reported by the service after a save; shown like local validation errors. */
+  serverErrors?: TeamErrors;
   onSubmit: (input: TeamInput) => void;
   onCancel: () => void;
 }
 
-export function TeamForm({ team, teams, researchAreas, researchers, saving, error, onSubmit, onCancel }: Props) {
+export function TeamForm({
+  team,
+  teams,
+  researchAreas,
+  researchers,
+  saving,
+  error,
+  serverErrors,
+  onSubmit,
+  onCancel,
+}: Props) {
   const [values, setValues] = useState<TeamInput>({
     name: team?.name ?? "",
     description: team?.description ?? "",
@@ -21,6 +33,11 @@ export function TeamForm({ team, teams, researchAreas, researchers, saving, erro
     leaderId: team?.leaderId ?? "",
   });
   const [errors, setErrors] = useState<TeamErrors>({});
+
+  // Like local errors, these stay until the next submit replaces them.
+  useEffect(() => {
+    if (serverErrors) setErrors(serverErrors);
+  }, [serverErrors]);
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -75,9 +92,13 @@ export function TeamForm({ team, teams, researchAreas, researchers, saving, erro
         {errors.leaderId && <span id="team-leader-error" className="pt-error" role="alert">{errors.leaderId}</span>}
       </label>
 
-      <fieldset className="pt-fieldset" style={{ border: "none", padding: 0, margin: 0 }}>
-        <legend style={{ fontWeight: "bold", marginBottom: "8px" }}>Research Areas</legend>
-        {researchAreas?.map((area) => (
+      <fieldset
+        className="pt-fieldset"
+        style={{ border: "none", padding: 0, margin: 0 }}
+        aria-describedby={errors.areaIds ? "team-areas-error" : undefined}
+      >
+        <legend style={{ fontWeight: "bold", marginBottom: "8px" }}>Research areas</legend>
+        {researchAreas.map((area) => (
           <label key={area.id} style={{ display: "block", marginBottom: "4px" }}>
             <input
               type="checkbox"
@@ -96,6 +117,7 @@ export function TeamForm({ team, teams, researchAreas, researchers, saving, erro
             {area.name}
           </label>
         ))}
+        {errors.areaIds && <span id="team-areas-error" className="pt-error" role="alert">{errors.areaIds}</span>}
       </fieldset>
 
       {error && <p className="pt-error" role="alert">{error}</p>}

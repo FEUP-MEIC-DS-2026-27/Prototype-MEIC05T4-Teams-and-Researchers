@@ -46,7 +46,7 @@ describe("Teams table", () => {
     await user.click(await screen.findByText("New team"));
     await user.type(screen.getByLabelText("Name"), "Data Crew");
     await user.type(screen.getByLabelText("Description"), "A team for data research.");
-    await user.selectOptions(screen.getByLabelText("Research areas"), "ds");
+    await user.click(screen.getByRole("checkbox", { name: "Data Science" }));
     await user.selectOptions(screen.getByLabelText("Leader"), "r3");
     await user.click(screen.getByRole("button", { name: "Save" }));
     expect(await screen.findByText('Team "Data Crew" created.')).toBeInTheDocument();
