@@ -5,13 +5,13 @@ import { ErrorBoundary } from "./ErrorBoundary";
 import { createMemoryApi } from "./memoryApi";
 import { TeamsAdminApp } from "./TeamsAdminApp";
 
-/** What the Shell passes to `mount()`. */
+/** Options for the standalone and legacy element-mount adapter. */
 export interface MountOptions {
   /** API Gateway base URL. Omit to use demo data. */
   apiBaseUrl?: string;
   /** Returns the current bearer token; called on every request. */
   getToken?: () => string | undefined;
-  /** Whether the signed-in user is an administrator. Anything but `true` means read-only. */
+  /** UI hint from the host's authenticated session; the API must enforce every write independently. */
   isAdmin: boolean;
   /** Replaces the built-in API (tests). */
   api?: TeamsApi;
@@ -24,13 +24,14 @@ export function mount(el: Element, options: MountOptions): void {
   const api =
     options.api ??
     (options.apiBaseUrl ? createHttpApi(options.apiBaseUrl, options.getToken) : createMemoryApi());
+  const demoMode = !options.api && !options.apiBaseUrl;
   const root = createRoot(el);
   roots.set(el, root);
   root.render(
     <StrictMode>
       <ErrorBoundary>
         {/* Fail closed: anything but a real `true` from the Shell is read-only. */}
-        <TeamsAdminApp api={api} isAdmin={options.isAdmin === true} />
+        <TeamsAdminApp api={api} isAdmin={options.isAdmin === true} demoMode={demoMode} />
       </ErrorBoundary>
     </StrictMode>,
   );
