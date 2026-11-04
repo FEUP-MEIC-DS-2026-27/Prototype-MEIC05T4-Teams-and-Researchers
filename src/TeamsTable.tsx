@@ -26,15 +26,15 @@ export function TeamsTable({ teams, areas, researchers, isAdmin, onEdit }: Props
   const filtering = query.trim() !== "" || areaId !== "";
 
   return (
-    <section aria-labelledby="pt-teams-title">
-      <div className="pt-filters" role="search">
-        <label>
-          Search by name
-          <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} />
+    <section className="d-flex flex-column gap-3" aria-labelledby="pt-teams-title">
+      <div className="row g-3 align-items-end" role="search">
+        <label className="col-md-5">
+          <span className="form-label">Search by name</span>
+          <input className="form-control" type="search" value={query} onChange={(e) => setQuery(e.target.value)} />
         </label>
-        <label>
-          Research area
-          <select value={areaId} onChange={(e) => setAreaId(e.target.value)}>
+        <label className="col-md-4">
+          <span className="form-label">Research area</span>
+          <select className="form-select" value={areaId} onChange={(e) => setAreaId(e.target.value)}>
             <option value="">All areas</option>
             {areas.map((a) => (
               <option key={a.id} value={a.id}>{a.name}</option>
@@ -42,63 +42,75 @@ export function TeamsTable({ teams, areas, researchers, isAdmin, onEdit }: Props
           </select>
         </label>
         {filtering && (
-          <button
-            type="button"
-            onClick={() => {
-              setQuery("");
-              setAreaId("");
-            }}
-          >
-            Clear filters
-          </button>
+          <div className="col-md-auto">
+            <button
+              type="button"
+              className="btn btn-outline-secondary"
+              onClick={() => {
+                setQuery("");
+                setAreaId("");
+              }}
+            >
+              Clear filters
+            </button>
+          </div>
         )}
       </div>
 
-      <p className="pt-count" role="status">
+      <p className="text-body-secondary small mb-0" role="status">
         {visible.length} of {teams.length} {teams.length === 1 ? "team" : "teams"}
       </p>
 
       {visible.length === 0 ? (
-        <p>{filtering ? "No teams match the current filters." : "No teams yet."}</p>
+        <p className="text-body-secondary mb-0">{filtering ? "No teams match the current filters." : "No teams yet."}</p>
       ) : (
-        <div className="pt-table-wrap">
-        <table className="pt-table">
-          <caption id="pt-teams-title" className="pt-sr-only">Teams directory</caption>
-          <thead>
-            <tr>
-              <th scope="col">Name</th>
-              <th scope="col">Description</th>
-              <th scope="col">Research areas</th>
-              <th scope="col">Leader</th>
-              {isAdmin && <th scope="col"><span className="pt-sr-only">Actions</span></th>}
-            </tr>
-          </thead>
-          <tbody>
-            {visible.map((t) => (
-              <tr key={t.id}>
-                <th scope="row">{t.name}</th>
-                <td data-label="Description">{t.description}</td>
-                <td data-label="Research areas">
-                  {t.areaIds.length === 0 ? (
-                    "—"
-                  ) : (
-                    <ul className="pt-tags">
-                      {t.areaIds.map((id) => (
-                        <li key={id}>{areaName.get(id) ?? id}</li>
-                      ))}
-                    </ul>
-                  )}
-                </td>
-                <td data-label="Leader" className="pt-leader">{t.leaderId ? (leaderName.get(t.leaderId) ?? t.leaderId) : "—"}</td>
-                {isAdmin && (
-                  <td className="pt-actions-cell">
-                    <button aria-label={`Edit ${t.name}`} onClick={() => onEdit(t)}>Edit</button>
-                  </td>
-                )}
+        <div className="table-responsive">
+          <table className="table table-striped align-middle mb-0">
+            <caption id="pt-teams-title" className="visually-hidden">Teams directory</caption>
+            <thead className="table-light">
+              <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Description</th>
+                <th scope="col">Research areas</th>
+                <th scope="col">Leader</th>
+                {isAdmin && <th scope="col"><span className="visually-hidden">Actions</span></th>}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {visible.map((t) => (
+                <tr key={t.id}>
+                  <th scope="row">{t.name}</th>
+                  <td>{t.description}</td>
+                  <td>
+                    {t.areaIds.length === 0 ? (
+                      "—"
+                    ) : (
+                      <ul className="list-unstyled d-flex flex-wrap gap-1 mb-0">
+                        {t.areaIds.map((id) => (
+                          <li key={id}>
+                            <span className="badge text-bg-light border">{areaName.get(id) ?? id}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </td>
+                  <td>{t.leaderId ? (leaderName.get(t.leaderId) ?? t.leaderId) : "—"}</td>
+                  {isAdmin && (
+                    <td className="text-end">
+                      <button
+                        type="button"
+                        className="btn btn-outline-primary btn-sm"
+                        aria-label={`Edit ${t.name}`}
+                        onClick={() => onEdit(t)}
+                      >
+                        Edit
+                      </button>
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </section>

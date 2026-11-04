@@ -24,11 +24,11 @@ export class ErrorBoundary extends Component<Props, State> {
     if (!this.state.failed) return this.props.children;
 
     return (
-      <div className="pt-root">
-        <div className="pt-load-error">
-          <p className="pt-error" role="alert">Something went wrong while showing the teams.</p>
-          <button onClick={() => this.setState({ failed: false })}>Try again</button>
-        </div>
+      <div className="alert alert-danger" role="alert">
+        <p>Something went wrong while showing the teams.</p>
+        <button className="btn btn-outline-danger" onClick={() => this.setState({ failed: false })}>
+          Try again
+        </button>
       </div>
     );
   }

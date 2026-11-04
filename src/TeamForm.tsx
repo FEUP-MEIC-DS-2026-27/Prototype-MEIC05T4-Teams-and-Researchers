@@ -48,23 +48,28 @@ export function TeamForm({
   }
 
   return (
-    <form className="pt-form" onSubmit={handleSubmit} noValidate>
-      <h2>{team ? `Edit team: ${team.name}` : "Create team"}</h2>
+    <form className="card" onSubmit={handleSubmit} noValidate>
+      <div className="card-body d-flex flex-column gap-3">
+      <h2 className="h4 mb-0">{team ? `Edit team: ${team.name}` : "Create team"}</h2>
 
-      <label>
-        Name
+      <div>
+        <label className="form-label" htmlFor="team-name">Name</label>
         <input
+          id="team-name"
+          className={`form-control${errors.name ? " is-invalid" : ""}`}
           value={values.name}
           onChange={(e) => setValues({ ...values, name: e.target.value })}
           aria-invalid={errors.name ? "true" : undefined}
           aria-describedby={errors.name ? "team-name-error" : undefined}
         />
-        {errors.name && <span id="team-name-error" className="pt-error" role="alert">{errors.name}</span>}
-      </label>
+        {errors.name && <div id="team-name-error" className="invalid-feedback d-block" role="alert">{errors.name}</div>}
+      </div>
 
-      <label>
-        Description
+      <div>
+        <label className="form-label" htmlFor="team-description">Description</label>
         <textarea
+          id="team-description"
+          className={`form-control${errors.description ? " is-invalid" : ""}`}
           rows={4}
           value={values.description}
           onChange={(e) => setValues({ ...values, description: e.target.value })}
@@ -72,13 +77,15 @@ export function TeamForm({
           aria-describedby={errors.description ? "team-description-error" : undefined}
         />
         {errors.description && (
-          <span id="team-description-error" className="pt-error" role="alert">{errors.description}</span>
+          <div id="team-description-error" className="invalid-feedback d-block" role="alert">{errors.description}</div>
         )}
-      </label>
+      </div>
 
-      <label>
-        Leader
+      <div>
+        <label className="form-label" htmlFor="team-leader">Leader</label>
         <select
+          id="team-leader"
+          className={`form-select${errors.leaderId ? " is-invalid" : ""}`}
           value={values.leaderId}
           onChange={(e) => setValues({ ...values, leaderId: e.target.value })}
           aria-invalid={errors.leaderId ? "true" : undefined}
@@ -86,47 +93,50 @@ export function TeamForm({
         >
           <option value="">Select a leader</option>
           {researchers.map((researcher) => (
-            <option key={researcher.id} value={researcher.id}>{researcher.name}</option>
+            <option key={researcher.id} value={researcher.id}>
+              {researcher.name}
+            </option>
           ))}
         </select>
-        {errors.leaderId && <span id="team-leader-error" className="pt-error" role="alert">{errors.leaderId}</span>}
-      </label>
+        {errors.leaderId && <div id="team-leader-error" className="invalid-feedback d-block" role="alert">{errors.leaderId}</div>}
+      </div>
 
       <fieldset
-        className="pt-fieldset"
-        style={{ border: "none", padding: 0, margin: 0 }}
+        className="border rounded-2 p-3"
         aria-describedby={errors.areaIds ? "team-areas-error" : undefined}
       >
-        <legend style={{ fontWeight: "bold", marginBottom: "8px" }}>Research areas</legend>
+        <legend className="float-none w-auto px-1 fs-6 mb-2">Research areas</legend>
         {researchAreas.map((area) => (
-          <label key={area.id} style={{ display: "block", marginBottom: "4px" }}>
+          <div className="form-check" key={area.id}>
             <input
+              id={`team-area-${area.id}`}
+              className="form-check-input"
               type="checkbox"
               value={area.id}
               checked={values.areaIds.includes(area.id)}
               onChange={(e) => {
-                const isChecked = e.target.checked;
-                const newAreaIds = isChecked
+                const areaIds = e.target.checked
                   ? [...values.areaIds, area.id]
                   : values.areaIds.filter((id) => id !== area.id);
-                  
-                setValues({ ...values, areaIds: newAreaIds });
+                setValues({ ...values, areaIds });
               }}
-              style={{ marginRight: "8px" }}
             />
-            {area.name}
-          </label>
+            <label className="form-check-label" htmlFor={`team-area-${area.id}`}>
+              {area.name}
+            </label>
+          </div>
         ))}
-        {errors.areaIds && <span id="team-areas-error" className="pt-error" role="alert">{errors.areaIds}</span>}
+        {errors.areaIds && <div id="team-areas-error" className="invalid-feedback d-block" role="alert">{errors.areaIds}</div>}
       </fieldset>
 
-      {error && <p className="pt-error" role="alert">{error}</p>}
+      {error && <div className="alert alert-danger mb-0" role="alert">{error}</div>}
 
-      <div className="pt-actions">
-        <button type="button" onClick={onCancel} disabled={saving}>Cancel</button>
-        <button type="submit" className="pt-primary" disabled={saving}>
+      <div className="d-flex justify-content-end gap-2">
+        <button type="button" className="btn btn-outline-secondary" onClick={onCancel} disabled={saving}>Cancel</button>
+        <button type="submit" className="btn btn-primary" disabled={saving}>
           {saving ? "Saving…" : "Save"}
         </button>
+      </div>
       </div>
     </form>
   );

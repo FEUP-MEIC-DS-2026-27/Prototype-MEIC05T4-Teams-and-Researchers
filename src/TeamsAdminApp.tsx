@@ -3,11 +3,13 @@ import { ApiError, type TeamsApi } from "./api";
 import { TeamForm } from "./TeamForm";
 import { TeamsTable } from "./TeamsTable";
 import type { ResearchArea, Researcher, Team, TeamErrors, TeamInput } from "./types";
-import "./styles.css";
 
 export interface TeamsAdminProps {
   api: TeamsApi;
+  /** UI hint only. The API must enforce the same permission on every write. */
   isAdmin: boolean;
+  readOnlyMessage?: string;
+  demoMode?: boolean;
 }
 
 type Mode = { kind: "list" } | { kind: "create" } | { kind: "edit"; team: Team };
@@ -16,7 +18,7 @@ function errorText(error: unknown, fallback: string): string {
   return error instanceof Error ? error.message : fallback;
 }
 
-export function TeamsAdminApp({ api, isAdmin }: TeamsAdminProps) {
+export function TeamsAdminApp({ api, isAdmin, readOnlyMessage, demoMode = false }: TeamsAdminProps) {
   const [teams, setTeams] = useState<Team[]>([]);
   const [mode, setMode] = useState<Mode>({ kind: "list" });
   const [loading, setLoading] = useState(true);
@@ -117,15 +119,15 @@ export function TeamsAdminApp({ api, isAdmin }: TeamsAdminProps) {
   // Retry reloads teams and lookups together, so one button covers every failed request.
   const retry = () => setLoadAttempt((attempt) => attempt + 1);
   const lookupBanner = lookupError && (
-    <div className="pt-load-error">
-      <p className="pt-error" role="alert">{lookupError}</p>
-      <button onClick={retry}>Retry</button>
+    <div className="alert alert-danger d-flex flex-wrap align-items-center gap-3 mb-0" role="alert">
+      <p className="mb-0">{lookupError}</p>
+      <button className="btn btn-outline-danger" onClick={retry}>Retry</button>
     </div>
   );
 
   if (isAdmin && mode.kind !== "list") {
     return (
-      <div className="pt-root">
+      <div className="d-flex flex-column gap-3">
         {lookupBanner}
         <TeamForm
           key={mode.kind === "edit" ? mode.team.id : "new"}
@@ -144,26 +146,37 @@ export function TeamsAdminApp({ api, isAdmin }: TeamsAdminProps) {
   }
 
   return (
-    <div className="pt-root">
-      <header className="pt-header">
-        <h1>Teams</h1>
+    <div className="d-flex flex-column gap-3">
+      {demoMode && (
+        <div className="alert alert-warning mb-0" role="note">
+          Demonstration data only. Changes are held in memory and will not persist.
+        </div>
+      )}
+      <header className="d-flex flex-wrap align-items-end justify-content-between gap-3">
+        <div>
+          <p className="text-body-secondary mb-1">HumanISE.info</p>
+          <h1 className="h3 mb-0">Teams</h1>
+        </div>
         {isAdmin && (
-          <button className="pt-primary" onClick={() => openForm({ kind: "create" })}>New team</button>
+          <button className="btn btn-primary" onClick={() => openForm({ kind: "create" })}>New team</button>
         )}
       </header>
       {!isAdmin && (
-        <p className="pt-readonly" role="note">
-          You have read-only access. Only administrators can create or edit teams.
+        <p className="alert alert-info py-2 mb-0" role="note">
+          {readOnlyMessage ?? "You have read-only access. Only administrators can create or edit teams."}
         </p>
       )}
-      {notice && <p className="pt-notice" role="status">{notice}</p>}
+      {notice && <p className="alert alert-success py-2 mb-0" role="status">{notice}</p>}
       {!loadError && lookupBanner}
       {loading ? (
-        <p role="status">Loading teams…</p>
+        <p className="d-flex align-items-center gap-2 text-body-secondary mb-0" role="status">
+          <span className="spinner-border spinner-border-sm" aria-hidden="true" />
+          Loading teams…
+        </p>
       ) : loadError ? (
-        <div className="pt-load-error">
-          <p className="pt-error" role="alert">{loadError}</p>
-          <button onClick={retry}>Retry</button>
+        <div className="alert alert-danger mb-0" role="alert">
+          <p className="mb-2">{loadError}</p>
+          <button className="btn btn-outline-danger" onClick={retry}>Retry</button>
         </div>
       ) : (
         <TeamsTable
