@@ -10,6 +10,7 @@ const shared = {
 };
 
 export default defineConfig(({ command }) => ({
+  envPrefix: ["VITE_", "PUBLIC_"],
   plugins: [
     react(),
     federation({
