@@ -26,9 +26,9 @@ export function TeamsTable({ teams, areas, researchers, isAdmin, onEdit }: Props
   const filtering = query.trim() !== "" || areaId !== "";
 
   return (
-    <section className="d-flex flex-column gap-3" aria-labelledby="pt-teams-title">
+    <section className="d-flex flex-column gap-3" aria-label="Teams directory">
       <div className="row g-3 align-items-end" role="search">
-        <label className="col-md-5">
+        <label className="col-md-5 col-lg-4">
           <span className="form-label">Search by name</span>
           <input className="form-control" type="search" value={query} onChange={(e) => setQuery(e.target.value)} />
         </label>
@@ -64,54 +64,56 @@ export function TeamsTable({ teams, areas, researchers, isAdmin, onEdit }: Props
       {visible.length === 0 ? (
         <p className="text-body-secondary mb-0">{filtering ? "No teams match the current filters." : "No teams yet."}</p>
       ) : (
-        <div className="table-responsive">
-          <table className="table table-striped align-middle mb-0">
-            <caption id="pt-teams-title" className="visually-hidden">Teams directory</caption>
-            <thead className="table-light">
-              <tr>
-                <th scope="col">Name</th>
-                <th scope="col">Description</th>
-                <th scope="col">Research areas</th>
-                <th scope="col">Leader</th>
-                {isAdmin && <th scope="col"><span className="visually-hidden">Actions</span></th>}
-              </tr>
-            </thead>
-            <tbody>
-              {visible.map((t) => (
-                <tr key={t.id}>
-                  <th scope="row">{t.name}</th>
-                  <td>{t.description}</td>
-                  <td>
-                    {t.areaIds.length === 0 ? (
-                      "—"
+        <ul className="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-3 list-unstyled mb-0">
+          {visible.map((team) => (
+            <li className="col" key={team.id}>
+              <article
+                className="card h-100"
+                aria-labelledby={`team-title-${team.id}`}
+              >
+                <div className="card-body d-flex flex-column align-items-start">
+                  <h2 className="h6 fw-semibold mb-2" id={`team-title-${team.id}`}>
+                    {team.name}
+                  </h2>
+                  <p className="small text-body-secondary mb-3">{team.description}</p>
+
+                  <div className="mb-3">
+                    <p className="small fw-semibold mb-2">Research areas</p>
+                    {team.areaIds.length === 0 ? (
+                      <span className="small text-body-secondary">No research areas</span>
                     ) : (
                       <ul className="list-unstyled d-flex flex-wrap gap-1 mb-0">
-                        {t.areaIds.map((id) => (
+                        {team.areaIds.map((id) => (
                           <li key={id}>
-                            <span className="badge text-bg-light border">{areaName.get(id) ?? id}</span>
+                            <span className="badge text-bg-light border fw-normal">
+                              {areaName.get(id) ?? id}
+                            </span>
                           </li>
                         ))}
                       </ul>
                     )}
-                  </td>
-                  <td>{t.leaderId ? (leaderName.get(t.leaderId) ?? t.leaderId) : "—"}</td>
+                  </div>
+
+                  <p className="small text-body-secondary mb-3">
+                    <span className="fw-semibold text-body">Leader:</span>{" "}
+                    {team.leaderId ? (leaderName.get(team.leaderId) ?? team.leaderId) : "—"}
+                  </p>
+
                   {isAdmin && (
-                    <td className="text-end">
-                      <button
-                        type="button"
-                        className="btn btn-outline-primary btn-sm"
-                        aria-label={`Edit ${t.name}`}
-                        onClick={() => onEdit(t)}
-                      >
-                        Edit
-                      </button>
-                    </td>
+                    <button
+                      type="button"
+                      className="btn btn-outline-primary btn-sm mt-auto"
+                      aria-label={`Edit ${team.name}`}
+                      onClick={() => onEdit(team)}
+                    >
+                      Edit
+                    </button>
                   )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                </div>
+              </article>
+            </li>
+          ))}
+        </ul>
       )}
     </section>
   );

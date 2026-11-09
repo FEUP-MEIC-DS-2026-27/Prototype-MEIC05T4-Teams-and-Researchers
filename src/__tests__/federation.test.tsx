@@ -10,27 +10,29 @@ describe("Module Federation entry points", () => {
     vi.unstubAllEnvs();
   });
 
-  it("renders the read-only Teams Overview using the VA1 mock data", async () => {
+  it("renders the Teams Overview with demo data and create/edit controls", async () => {
     vi.stubEnv("PUBLIC_USE_MOCK", "true");
     render(<TeamsPage />);
 
     expect(await screen.findByRole("heading", { name: "Teams Overview" })).toBeInTheDocument();
-    expect(screen.getByText("Alpha Team")).toBeInTheDocument();
-    expect(screen.getByText("Beta Team")).toBeInTheDocument();
-    expect(screen.getByText("Members: 5")).toBeInTheDocument();
-    expect(screen.getByText("Members: 3")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "New team" })).not.toBeInTheDocument();
+    expect(screen.getByText("Interaction Lab")).toBeInTheDocument();
+    expect(screen.getByText("Trustworthy Software")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "New team" })).toBeInTheDocument();
+    expect(screen.getAllByLabelText(/^Edit /)).toHaveLength(2);
   });
 
-  it("filters teams by name", async () => {
+  it("opens the team form when the host enables admin controls", async () => {
     vi.stubEnv("PUBLIC_USE_MOCK", "true");
     const user = userEvent.setup();
     render(<TeamsPage />);
 
-    await user.type(screen.getByRole("searchbox", { name: "Search teams" }), "beta");
+    await user.click(await screen.findByRole("button", { name: "New team" }));
 
-    expect(screen.getByText("Beta Team")).toBeInTheDocument();
-    expect(screen.queryByText("Alpha Team")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Create team" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Name")).toBeInTheDocument();
+    expect(screen.getByLabelText("Description")).toBeInTheDocument();
+    expect(screen.getByLabelText("Leader")).toBeInTheDocument();
+    expect(screen.getByText("Research areas")).toBeInTheDocument();
   });
 
   it("builds an active Teams link under the existing VA1 base path", () => {

@@ -28,10 +28,10 @@ describe("TeamsAdminApp", () => {
     await user.click(screen.getByRole("checkbox", { name: "Software Engineering" }));
     await user.selectOptions(screen.getByLabelText("Leader"), "r3");
     await user.click(screen.getByRole("button", { name: "Save" }));
-    const row = (await screen.findByRole("rowheader", { name: "Data Crew" })).closest("tr")!;
-    expect(within(row).getByText("Data Science")).toBeInTheDocument();
-    expect(within(row).getByText("Software Engineering")).toBeInTheDocument();
-    expect(within(row).getByText("Carla Nogueira")).toBeInTheDocument();
+    const card = await screen.findByRole("article", { name: "Data Crew" });
+    expect(within(card).getByText("Data Science")).toBeInTheDocument();
+    expect(within(card).getByText("Software Engineering")).toBeInTheDocument();
+    expect(within(card).getByText("Carla Nogueira")).toBeInTheDocument();
   });
 
   it("edits a team", async () => {
@@ -48,11 +48,11 @@ describe("TeamsAdminApp", () => {
     await user.click(screen.getByRole("checkbox", { name: "Cybersecurity" }));
     await user.selectOptions(screen.getByLabelText("Leader"), "r4");
     await user.click(screen.getByRole("button", { name: "Save" }));
-    const row = (await screen.findByRole("rowheader", { name: "Interaction Group" })).closest("tr")!;
-    expect(within(row).getByText("Software Engineering")).toBeInTheDocument();
-    expect(within(row).getByText("Cybersecurity")).toBeInTheDocument();
-    expect(within(row).queryByText("Human-Computer Interaction")).not.toBeInTheDocument();
-    expect(within(row).getByText("Diogo Faria")).toBeInTheDocument();
+    const card = await screen.findByRole("article", { name: "Interaction Group" });
+    expect(within(card).getByText("Software Engineering")).toBeInTheDocument();
+    expect(within(card).getByText("Cybersecurity")).toBeInTheDocument();
+    expect(within(card).queryByText("Human-Computer Interaction")).not.toBeInTheDocument();
+    expect(within(card).getByText("Diogo Faria")).toBeInTheDocument();
   });
 
   it("validates required fields", async () => {

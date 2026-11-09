@@ -6,10 +6,11 @@ import { TeamsAdminApp } from "../TeamsAdminApp";
 describe("Teams table", () => {
   it("shows research areas and leader names", async () => {
     render(<TeamsAdminApp api={createMemoryApi()} isAdmin />);
-    const row = (await screen.findByRole("rowheader", { name: "Trustworthy Software" })).closest("tr")!;
-    expect(within(row).getByText("Software Engineering")).toBeInTheDocument();
-    expect(within(row).getByText("Cybersecurity")).toBeInTheDocument();
-    expect(within(row).getByText("Bruno Matos")).toBeInTheDocument();
+    const card = await screen.findByRole("article", { name: "Trustworthy Software" });
+    expect(within(card).getByText("Software Engineering")).toBeInTheDocument();
+    expect(within(card).getByText("Cybersecurity")).toBeInTheDocument();
+    expect(within(card).getByText("Bruno Matos")).toBeInTheDocument();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });
 
   it("filters by name", async () => {

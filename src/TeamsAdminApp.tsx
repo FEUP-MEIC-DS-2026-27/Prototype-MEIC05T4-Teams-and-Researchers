@@ -9,6 +9,8 @@ export interface TeamsAdminProps {
   /** UI hint only. The API must enforce the same permission on every write. */
   isAdmin: boolean;
   demoMode?: boolean;
+  title?: string;
+  description?: string;
 }
 
 type Mode = { kind: "list" } | { kind: "create" } | { kind: "edit"; team: Team };
@@ -17,7 +19,13 @@ function errorText(error: unknown, fallback: string): string {
   return error instanceof Error ? error.message : fallback;
 }
 
-export function TeamsAdminApp({ api, isAdmin, demoMode = false }: TeamsAdminProps) {
+export function TeamsAdminApp({
+  api,
+  isAdmin,
+  demoMode = false,
+  title = "Teams",
+  description,
+}: TeamsAdminProps) {
   const [teams, setTeams] = useState<Team[]>([]);
   const [mode, setMode] = useState<Mode>({ kind: "list" });
   const [loading, setLoading] = useState(true);
@@ -153,8 +161,8 @@ export function TeamsAdminApp({ api, isAdmin, demoMode = false }: TeamsAdminProp
       )}
       <header className="d-flex flex-wrap align-items-end justify-content-between gap-3">
         <div>
-          <p className="text-body-secondary mb-1">HumanISE.info</p>
-          <h1 className="h3 mb-0">Teams</h1>
+          <h2 className="h2 mb-0">{title}</h2>
+          {description && <p className="text-body-secondary mt-2 mb-0">{description}</p>}
         </div>
         {isAdmin && (
           <button className="btn btn-primary" onClick={() => openForm({ kind: "create" })}>New team</button>
