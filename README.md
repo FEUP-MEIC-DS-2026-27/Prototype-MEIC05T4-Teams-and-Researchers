@@ -1,11 +1,11 @@
-# HumanISE.info - People & Teams Microfrontend
+# HumanISE.info - Teams Microfrontend
 
-Microfrontend do contentor *People & Teams* (modelo C4), que implementa a user story
-[#96 – Create and Edit Formal Teams and Details](https://github.com/FEUP-MEIC-DS-2026-27/h.i/issues/96):
-o administrador cria e edita equipas formais (nome, descrição, áreas de investigação, líder)
-e os restantes utilizadores consultam o diretório de equipas.
+Microfrontend de equipes para a VA1 de HumanISE.info. A página federada oferece a visão somente de leitura
+**Teams Overview**, com busca por nome, estado e número de membros, seguindo o contrato do serviço de equipes
+da estrutura atual do repositório principal.
 
-O protótipo completo anterior está na branch `v1-geral`.
+O formulário administrativo standalone permanece disponível para o protótipo local; ele usa dados em memória e
+não é exposto na integração com a VA1.
 
 ## Comandos
 
@@ -19,84 +19,40 @@ npm run build   # dist/mf-manifest.json + remoteEntry.js e a página standalone
 ## Importação na VA1 do h.i
 
 Este repositório publica um remote Module Federation chamado `people_teams`, compatível com a VA1 do
-[`h.i`](https://github.com/FEUP-MEIC-DS-2026-27/h.i). O remote partilha React e React DOM `18.3.1` e
+[`h.i`](https://github.com/FEUP-MEIC-DS-2026-27/h.i). O remote partilha React, React DOM `18.3.1` e
 React Router DOM `7.9.6` como singletons e expõe:
 
 - `people_teams/TeamsPage`: página React de equipes; não cria root nem router.
 - `people_teams/TeamsNavigationLink`: link `Teams` para a navegação existente da VA1.
 
-Para desenvolvimento local, inicie este remote com `npm run dev`. Na configuração Module Federation da VA1 do
-`h.i`, adicione o remote sem substituir a VA1 nem os seus remotes/rotas atuais:
+Na configuração atual, a VA1 continua sendo o remote principal (`va1/App`) e carrega `TeamsPage` como uma rota filha
+em `/va1/teams`. A URL do manifest é configurada em `federation-value-areas/apps/va1/.env` e pode ser alterada
+sem substituir o remote ou as rotas atuais:
 
-```ts
-remotes: {
-  people_teams: "people_teams@http://localhost:3005/mf-manifest.json",
-},
+```env
+REMOTE_PEOPLE_TEAMS_URL=http://localhost:3005/mf-manifest.json
 ```
 
-Na `App.tsx` existente, importe `people_teams/TeamsPage` e `people_teams/TeamsNavigationLink` e use-os na navegação
-e na árvore `Routes` já existentes, preservando as rotas de pesquisadores:
+Para desenvolvimento local, inicie o remote com `npm run dev` e a VA1 com `pnpm --filter @value-areas/va1 dev`.
+O router da Shell/VA1 continua sendo o único router; a página federada não cria um `BrowserRouter`.
 
-```tsx
-<nav className="nav nav-tabs">
-  {/* keep the existing Researchers navigation */}
-  <TeamsNavigationLink basePath={basePath} />
-</nav>
-<Routes>
-  {/* keep the existing researcher search and profile routes */}
-  <Route path="teams" element={<TeamsPage />} />
-</Routes>
-```
-
-Como a geração automática de tipos remotos está desativada, declare os módulos na VA1 do host, por exemplo em
-`apps/va1/src/remote-modules.d.ts`:
-
-```ts
-declare module "people_teams/TeamsPage" {
-  import type { ComponentType } from "react";
-  const TeamsPage: ComponentType;
-  export default TeamsPage;
-}
-
-declare module "people_teams/TeamsNavigationLink" {
-  import type { ComponentType } from "react";
-  const TeamsNavigationLink: ComponentType<{ basePath: string }>;
-  export default TeamsNavigationLink;
-}
-```
-
-Ao publicar, sirva todo o diretório `dist/` deste repositório e aponte o remote para o seu `mf-manifest.json`.
-
-O router e o `createRoot` continuam pertencendo à Shell/VA1. O entrypoint `mount()` é mantido somente para o
-protótipo standalone e consumidores legados; não deve ser chamado ao integrar na VA1.
+Ao publicar, sirva todo o diretório `dist/` deste repositório e configure `REMOTE_PEOPLE_TEAMS_URL` com a URL do
+`mf-manifest.json` publicado.
 
 ### Design e prévia standalone
 
 Os componentes federados usam classes Bootstrap 5 e não carregam uma folha de estilos global própria: a VA1 fornece o
 Bootstrap e o tema compartilhados. O entrypoint standalone carrega Bootstrap `5.3.8` para manter a mesma aparência.
 
-A página federada é somente para leitura. Na prévia standalone, os controles administrativos de demonstração ficam
-desativados por padrão e só podem ser exibidos durante `npm run dev` com `?demoAdmin=true`; os dados continuam apenas
-em memória e não são persistidos. Esse parâmetro não é um mecanismo de autenticação e não funciona no build de produção.
+`PUBLIC_USE_MOCK` controla os dados da página federada: qualquer valor diferente de `false` usa a lista de demonstração
+(Alpha Team e Beta Team); com `false`, a página consulta `GET ${PUBLIC_TEAMS_API_URL}/teams`. O endereço base padrão é
+`/api/people`, o mesmo usado pelo cliente Teams Overview da VA1. A página exibe erro e permite tentar novamente quando
+a API falha; não converte falhas em dados falsos.
+
+Na prévia standalone, o formulário administrativo continua disponível apenas para demonstração e usa dados em memória,
+sem persistência. A rota federada não expõe ações de criação ou edição.
 
 ### Backend e permissões
 
-`services/people-teams` no `h.i` oferece atualmente apenas leituras de pesquisadores (`GET /api/researchers`,
-`/api/researchers/facets`, `/api/researchers/suggestions`, `/api/researchers/summary` e
-`/api/researchers/{researcher_id}`). Não há endpoints de equipes ou áreas de investigação, nem autorização de
-administrador. O endpoint atual de busca de pesquisadores também não fornece o formato de IDs string esperado pelo
-seletor de líderes sem um adaptador. Por isso, `TeamsPage` usa exemplos em memória, identifica-os como demonstração e
-permanece somente para leitura. Criar/editar no protótipo standalone não persiste dados.
-
-Para habilitar persistência, o serviço precisará oferecer operações equivalentes às abaixo (elas **não existem** hoje):
-
-- `GET /api/teams`, `POST /api/teams` e `PUT /api/teams/{id}`;
-- `GET /api/research-areas`;
-- uma operação de consulta de pesquisadores no formato usado pelo seletor de líderes;
-- autenticação e autorização administrativa aplicadas no backend às operações de escrita.
-
-Para restringir CRUD a administradores, a Shell deve obter a permissão de uma sessão autenticada e usá-la apenas para
-controlar a visibilidade dos controles. O serviço precisa validar o token e a permissão em **cada** criação/edição e
-responder `401`/`403` quando apropriado; esconder botões ou passar um booleano ao React não é uma barreira de
-segurança. Não use query string, estado local ou seleção de perfil como autorização. Até existirem endpoints e
-autorização reais, a VA1 deve continuar usando a página federada somente para leitura.
+O endpoint de Teams Overview é somente de leitura e responde uma lista com `id`, `name`, `status` e `memberCount`.
+O formulário standalone não deve ser usado para inferir suporte de criação/edição ou autorização no backend.
